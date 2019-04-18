@@ -2,6 +2,7 @@ package ruler
 
 import (
 	"context"
+
 	"github.com/prometheus/prometheus/prompb"
 	"github.com/searchlight/ruler/pkg/m3coordinator"
 
@@ -13,7 +14,7 @@ import (
 // and a storage.Appender.
 type appendableAppender struct {
 	writer  m3coordinator.Writer
-	ctx context.Context
+	ctx     context.Context
 	samples []prompb.TimeSeries
 }
 
@@ -25,7 +26,7 @@ func (a *appendableAppender) Add(l labels.Labels, t int64, v float64) (uint64, e
 	lbs := []prompb.Label{}
 	for _, lbl := range l {
 		lbs = append(lbs, prompb.Label{
-			Name: lbl.Name,
+			Name:  lbl.Name,
 			Value: lbl.Value,
 		})
 	}
@@ -34,7 +35,7 @@ func (a *appendableAppender) Add(l labels.Labels, t int64, v float64) (uint64, e
 		Samples: []prompb.Sample{
 			{
 				Timestamp: t,
-				Value: v,
+				Value:     v,
 			},
 		},
 	})

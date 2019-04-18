@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/golang/glog"
 
 	"github.com/gorilla/mux"
@@ -67,7 +69,7 @@ func (a *API) setConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ruleGroups := &RuleGroupsWithInfo{}
-	if err := json.NewDecoder(r.Body).Decode(ruleGroups); err != nil {
+	if err := yaml.NewDecoder(r.Body).Decode(ruleGroups); err != nil {
 		glog.Errorf("for userID %s: error decoding json body: %v", userID, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -78,7 +80,8 @@ func (a *API) setConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := ruleGroups.AddLabelsToQueryExpr(getLables(userID)); err != nil {
+	// Add client labels for multi-tenancy purpose
+	if err := ruleGroups.AddLabelsToQueryExprAddRuleLabel(getLables(userID)); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

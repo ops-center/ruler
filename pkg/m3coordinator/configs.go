@@ -1,9 +1,10 @@
 package m3coordinator
 
 import (
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
-	"time"
 )
 
 const (

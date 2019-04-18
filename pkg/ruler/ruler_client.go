@@ -1,7 +1,11 @@
 package ruler
 
 import (
-	"github.com/cortexproject/cortex/pkg/util"
+	"time"
+
+	"github.com/searchlight/ruler/pkg/logger"
+
+	erragg "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/pkg/labels"
@@ -9,15 +13,13 @@ import (
 	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/rules"
 	"github.com/searchlight/prom-query-handler/promquery"
-	"time"
-	erragg "github.com/appscode/go/util/errors"
 )
 
 type RuleGroupsWithInfo struct {
-	ID string `json:"id"`
-	rulefmt.RuleGroups `json:",inline"`
-	UpdatedAtInUnix int64
-	DeletedAtInUnix int64
+	ID                 string `json:"id" yaml:"id"`
+	rulefmt.RuleGroups `json:",inline" yaml:",inline"`
+	UpdatedAtInUnix    int64
+	DeletedAtInUnix    int64
 }
 
 func (r *RuleGroupsWithInfo) Validate() error {
@@ -30,14 +32,25 @@ func (r *RuleGroupsWithInfo) Validate() error {
 	return nil
 }
 
-func (r *RuleGroupsWithInfo) AddLabelsToQueryExpr(lbs []labels.Label) error {
+// This will add provided labels as label matchers to query and to rule labels
+// In conflict, it will overwrite
+func (r *RuleGroupsWithInfo) AddLabelsToQueryExprAddRuleLabel(lbs []labels.Label) error {
 	var err error
-	for p, g:= range r.Groups {
+	for p, g := range r.Groups {
 		for q, rg := range r.Groups[p].Rules {
 			r.Groups[p].Rules[q].Expr, err = promquery.AddLabelMatchersToQuery(r.Groups[p].Rules[q].Expr, lbs)
 			if err != nil {
 				return errors.Wrapf(err, "failed to add label matchers to rule expr(%s) for rule group %s", rg.Expr, g.Name)
 			}
+
+			lMap := r.Groups[p].Rules[q].Labels
+			if lMap == nil {
+				lMap = map[string]string{}
+			}
+			for _, lb := range lbs {
+				lMap[lb.Name] = lb.Value
+			}
+			r.Groups[p].Rules[q].Labels = lMap
 		}
 	}
 	return nil
@@ -63,7 +76,7 @@ func (r RuleGroupsWithInfo) Parse() ([]ruleGroup, error) {
 					labels.FromMap(rl.Labels),
 					labels.FromMap(rl.Annotations),
 					true,
-					log.With(util.Logger, "alert", rl.Alert),
+					log.With(logger.Logger, "alert", rl.Alert),
 				))
 				continue
 			}
@@ -77,13 +90,13 @@ func (r RuleGroupsWithInfo) Parse() ([]ruleGroup, error) {
 		// Group names have to be unique in Prometheus, but only within one rules file.
 		groups = append(groups, ruleGroup{
 			ruleGroupName: rg.Name,
-			 rules: rls,
+			rules:         rls,
 		})
 	}
 	return groups, nil
 }
 
-type RuleClient interface{
+type RuleClient interface {
 	GetUserRuleGroups(userID string) ([]RuleGroupsWithInfo, error)
 	GetRuleGroup(userID string, groupID string) (RuleGroupsWithInfo, error)
 	GetAllRuleGroups() (map[string][]RuleGroupsWithInfo, error)
@@ -125,7 +138,7 @@ func (m *Inmem) GetUserRuleGroups(userID string) ([]RuleGroupsWithInfo, error) {
 func (m *Inmem) GetRuleGroup(userID string, groupID string) (RuleGroupsWithInfo, error) {
 	gs, found := m.storage[userID]
 	if found {
-		if g, found := gs[groupID]; found && g.DeletedAtInUnix <= 0{
+		if g, found := gs[groupID]; found && g.DeletedAtInUnix <= 0 {
 			return g, nil
 		}
 	}
@@ -151,7 +164,7 @@ func (m *Inmem) GetAllRuleGroupsUpdatedOrDeletedAfter(after int64) (map[string][
 	for uid, gs := range m.storage {
 		rgs := []RuleGroupsWithInfo{}
 		for _, v := range gs {
-			if v.DeletedAtInUnix <= 0 && v.UpdatedAtInUnix > after{
+			if v.DeletedAtInUnix <= 0 && v.UpdatedAtInUnix > after {
 				rgs = append(rgs, v)
 			}
 		}
@@ -163,16 +176,16 @@ func (m *Inmem) GetAllRuleGroupsUpdatedOrDeletedAfter(after int64) (map[string][
 func (m *Inmem) SetRuleGroup(userID string, ruleGroup RuleGroupsWithInfo) error {
 	if _, found := m.storage[userID]; found {
 		m.storage[userID][ruleGroup.ID] = RuleGroupsWithInfo{
-			ID: ruleGroup.ID,
-			RuleGroups: ruleGroup.RuleGroups,
+			ID:              ruleGroup.ID,
+			RuleGroups:      ruleGroup.RuleGroups,
 			UpdatedAtInUnix: time.Now().Unix(),
 			DeletedAtInUnix: 0,
 		}
 	} else {
 		m.storage[userID] = map[string]RuleGroupsWithInfo{
-			ruleGroup.ID: RuleGroupsWithInfo{
-				ID: ruleGroup.ID,
-				RuleGroups: ruleGroup.RuleGroups,
+			ruleGroup.ID: {
+				ID:              ruleGroup.ID,
+				RuleGroups:      ruleGroup.RuleGroups,
 				UpdatedAtInUnix: time.Now().Unix(),
 				DeletedAtInUnix: 0,
 			},
@@ -210,7 +223,7 @@ func (m *Inmem) GetAllRuleGroupsDeletedAfter(after int64) (map[string][]RuleGrou
 	for uid, gs := range m.storage {
 		rgs := []RuleGroupsWithInfo{}
 		for _, v := range gs {
-			if v.DeletedAtInUnix > after{
+			if v.DeletedAtInUnix > after {
 				rgs = append(rgs, v)
 			}
 		}
