@@ -26,6 +26,7 @@ const (
 	QueryAPIPath = "/api/v1/query_range"
 )
 
+// https://github.com/m3db/m3/blob/2cf0172d284b8ba1028b5b6d49a72ff93c851644/src/query/api/v1/handler/prometheus/native/common.go#L230
 type M3QueryResponse struct {
 	Status string `json:"status,omitempty"`
 	Error  string `json:"error,omitempty"`
@@ -179,6 +180,8 @@ func M3QueryResponsePromqlVector(resp *M3QueryResponse, time2 time.Time) promql.
 					if err != nil {
 						level.Warn(logger.Logger).Log("failed to convert interface{} to float64", err)
 					} else {
+						// https://prometheus.io/docs/concepts/data_model/
+						// converting to millisecond
 						sample.Point = promql.Point{T: updatedT * 1000, V: v}
 						vec = append(vec, sample)
 					}
