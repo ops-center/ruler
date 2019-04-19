@@ -2,10 +2,11 @@ package ruler
 
 import (
 	"flag"
-	"github.com/pkg/errors"
-	"github.com/spf13/pflag"
 	"time"
+
+	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/promql"
+	"github.com/spf13/pflag"
 )
 
 // Config is the configuration for the recording rules server.
@@ -30,7 +31,7 @@ type Config struct {
 
 // AddFlags adds the flags required to config this to the given FlagSet
 func (c *Config) AddFlags(f *pflag.FlagSet) {
-	f.StringVar(&c.ExternalURL, "ruler.external.url", "", "URL of alerts return path.")
+	f.StringVar(&c.ExternalURL, "ruler.external-url", "", "URL of alerts return path.")
 	f.DurationVar(&c.EvaluationInterval, "ruler.evaluation-interval", 15*time.Second, "How frequently to evaluate rules")
 	f.IntVar(&c.NumWorkers, "ruler.num-workers", 1, "Number of rule evaluator worker routines in this process")
 	f.StringVar(&c.AlertmanagerURL, "ruler.alertmanager-url", "", "URL of the Alertmanager to send notifications to.")

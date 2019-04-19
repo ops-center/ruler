@@ -1,0 +1,21 @@
+{
+  "id": "1122",
+  "groups": [
+    {
+      "name": "memory",
+      "rules": [
+        {
+          "alert": "HighMem",
+          "expr": "process_virtual_memory_bytes > 42046016",
+          "for": "3m",
+          "labels": {
+            "severity": "page"
+          },
+          "annotations": {
+            "summary": "High memory use"
+          }
+        }
+      ]
+    }
+  ]
+}

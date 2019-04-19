@@ -1,11 +1,11 @@
 package ruler
 
 import (
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/pkg/labels"
-	"net/http"
 )
-
 
 const (
 	// UserIDHeaderName denotes the UserID the request has been authenticated as

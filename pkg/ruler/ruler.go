@@ -2,13 +2,20 @@ package ruler
 
 import (
 	native_ctx "context"
+	"crypto/md5"
+	"encoding/json"
 	"fmt"
-	"github.com/prometheus/prometheus/discovery/targetgroup"
-	"github.com/searchlight/ruler/pkg/m3coordinator"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
+
+	"github.com/prometheus/prometheus/discovery"
+
+	logger2 "github.com/searchlight/ruler/pkg/logger"
+
+	"github.com/prometheus/prometheus/discovery/targetgroup"
+	"github.com/searchlight/ruler/pkg/m3coordinator"
 
 	gklog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -19,14 +26,11 @@ import (
 	"github.com/prometheus/prometheus/config"
 	sd_config "github.com/prometheus/prometheus/discovery/config"
 	"github.com/prometheus/prometheus/notifier"
-	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/rules"
-	"github.com/prometheus/prometheus/storage"
 	"github.com/prometheus/prometheus/util/strutil"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
 
-	"github.com/cortexproject/cortex/pkg/util"
 	"github.com/weaveworks/common/instrument"
 	"github.com/weaveworks/common/user"
 )
@@ -71,14 +75,13 @@ func init() {
 
 // Ruler evaluates rules.
 type Ruler struct {
-	engine        *promql.Engine
-	queryable     storage.Queryable
-	writer        m3coordinator.Writer
-	alertURL      *url.URL
-	notifierCfg   *config.Config
-	queueCapacity int
-	groupTimeout  time.Duration
-	metrics       *rules.Metrics
+	queryFunc        rules.QueryFunc
+	writer           m3coordinator.Writer
+	alertExternalURL *url.URL
+	notifierCfg      *config.Config
+	queueCapacity    int
+	groupTimeout     time.Duration
+	metrics          *rules.Metrics
 
 	// Per-user notifiers with separate queues.
 	notifiersMtx sync.Mutex
@@ -91,28 +94,64 @@ type Ruler struct {
 type rulerNotifier struct {
 	notifier  *notifier.Manager
 	logger    gklog.Logger
+	sdCancel  context.CancelFunc
+	sdManager *discovery.Manager
+	wg        sync.WaitGroup
 }
 
 func newRulerNotifier(o *notifier.Options, l gklog.Logger) *rulerNotifier {
+	sdCtx, sdCancel := context.WithCancel(context.Background())
 	return &rulerNotifier{
 		notifier:  notifier.NewManager(o, l),
+		sdCancel:  sdCancel,
+		sdManager: discovery.NewManager(sdCtx, l),
 		logger:    l,
 	}
+}
+
+func (rn *rulerNotifier) run() {
+	rn.wg.Add(1)
+	go func() {
+		if err := rn.sdManager.Run(); err != nil {
+			level.Error(rn.logger).Log("msg", "error starting notifier discovery manager", "err", err)
+		}
+		rn.wg.Done()
+	}()
+	go func() {
+		rn.notifier.Run(rn.sdManager.SyncCh())
+		rn.wg.Done()
+	}()
 }
 
 func (rn *rulerNotifier) applyConfig(cfg *config.Config) error {
 	if err := rn.notifier.ApplyConfig(cfg); err != nil {
 		return err
 	}
-	return nil
+
+	sdCfgs := make(map[string]sd_config.ServiceDiscoveryConfig)
+	for _, v := range cfg.AlertingConfig.AlertmanagerConfigs {
+		// AlertmanagerConfigs doesn't hold an unique identifier so we use the config hash as the identifier.
+		b, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		// This hash needs to be identical to the one computed in the notifier in
+		// https://github.com/prometheus/prometheus/blob/719c579f7b917b384c3d629752dea026513317dc/notifier/notifier.go#L265
+		// This kind of sucks, but it's done in Prometheus in main.go in the same way.
+		sdCfgs[fmt.Sprintf("%x", md5.Sum(b))] = v.ServiceDiscoveryConfig
+	}
+
+	return rn.sdManager.ApplyConfig(sdCfgs)
 }
 
 func (rn *rulerNotifier) stop() {
+	rn.sdCancel()
 	rn.notifier.Stop()
+	rn.wg.Wait()
 }
 
-// NewRuler creates a new ruler from a distributor and chunk store.
-func NewRuler(cfg *Config, engine *promql.Engine, queryable storage.Queryable, w m3coordinator.Writer) (*Ruler, error) {
+// NewRuler creates a new ruler
+func NewRuler(cfg *Config, queryFunc rules.QueryFunc, w m3coordinator.Writer) (*Ruler, error) {
 	ncfg, err := buildNotifierConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -124,15 +163,14 @@ func NewRuler(cfg *Config, engine *promql.Engine, queryable storage.Queryable, w
 	}
 
 	return &Ruler{
-		engine:        engine,
-		queryable:     queryable,
-		writer:        w,
-		alertURL:      externalUrl,
-		notifierCfg:   ncfg,
-		queueCapacity: cfg.NotificationQueueCapacity,
-		notifiers:     map[string]*rulerNotifier{},
-		groupTimeout:  cfg.GroupTimeout,
-		metrics:       rules.NewGroupMetrics(prometheus.DefaultRegisterer),
+		queryFunc:        queryFunc,
+		writer:           w,
+		alertExternalURL: externalUrl,
+		notifierCfg:      ncfg,
+		queueCapacity:    cfg.NotificationQueueCapacity,
+		notifiers:        map[string]*rulerNotifier{},
+		groupTimeout:     cfg.GroupTimeout,
+		metrics:          rules.NewGroupMetrics(prometheus.DefaultRegisterer),
 	}, nil
 }
 
@@ -195,11 +233,11 @@ func (r *Ruler) newGroup(userID string, groupID string, ruleGroupName string, rl
 	}
 	opts := &rules.ManagerOptions{
 		Appendable:  appendable,
-		QueryFunc:   rules.EngineQueryFunc(r.engine, r.queryable),
+		QueryFunc:   r.queryFunc,
 		Context:     context.Background(),
-		ExternalURL: r.alertURL,
-		NotifyFunc:  sendAlerts(notifier, r.alertURL.String()),
-		Logger:      util.Logger,
+		ExternalURL: r.alertExternalURL,
+		NotifyFunc:  sendAlerts(notifier, r.alertExternalURL.String()),
+		Logger:      logger2.Logger,
 		Metrics:     r.metrics,
 	}
 	return newGroup(ruleGroupName, rls, appendable, opts), nil
@@ -212,7 +250,6 @@ func (r *Ruler) newGroup(userID string, groupID string, ruleGroupName string, rl
 func sendAlerts(n *notifier.Manager, externalURL string) rules.NotifyFunc {
 	return func(ctx native_ctx.Context, expr string, alerts ...*rules.Alert) {
 		var res []*notifier.Alert
-
 		for _, alert := range alerts {
 			// Only send actually firing alerts.
 			if alert.State == rules.StatePending {
@@ -252,9 +289,12 @@ func (r *Ruler) getOrCreateNotifier(userID string) (*notifier.Manager, error) {
 			if err := SetUserIDInHTTPRequest(userID, req); err != nil {
 				return nil, err
 			}
+
 			return ctxhttp.Do(ctx, client, req)
 		},
-	}, util.Logger)
+	}, logger2.Logger)
+
+	go n.run()
 
 	// This should never fail, unless there's a programming mistake.
 	if err := n.applyConfig(r.notifierCfg); err != nil {
@@ -268,8 +308,9 @@ func (r *Ruler) getOrCreateNotifier(userID string) (*notifier.Manager, error) {
 
 // Evaluate a list of rules in the given context.
 func (r *Ruler) Evaluate(userID string, item *workItem) {
+	// TODO:
 	ctx := user.InjectOrgID(context.Background(), userID)
-	logger := util.WithContext(ctx, util.Logger)
+	logger := gklog.With(logger2.Logger, "user_id", userID)
 	level.Debug(logger).Log("msg", "evaluating rules...", "num_rules", len(item.group.Rules()))
 	ctx, cancelTimeout := context.WithTimeout(ctx, r.groupTimeout)
 	instrument.CollectedRequest(ctx, "Evaluate", evalDuration, nil, func(ctx native_ctx.Context) error {
@@ -330,7 +371,7 @@ func (s *Server) run() {
 	for _, w := range s.workers {
 		go w.Run()
 	}
-	level.Info(util.Logger).Log("msg", "ruler up and running")
+	level.Info(logger2.Logger).Log("msg", "ruler up and running")
 }
 
 // Stop the server.
@@ -374,20 +415,20 @@ func (w *worker) Run() {
 		}
 		waitStart := time.Now()
 		blockedWorkers.Inc()
-		level.Debug(util.Logger).Log("msg", "waiting for next work item")
+		level.Debug(logger2.Logger).Log("msg", "waiting for next work item")
 		item := w.scheduler.nextWorkItem()
 		blockedWorkers.Dec()
 		waitElapsed := time.Now().Sub(waitStart)
 		if item == nil {
-			level.Debug(util.Logger).Log("msg", "queue closed and empty; terminating worker")
+			level.Debug(logger2.Logger).Log("msg", "queue closed and empty; terminating worker")
 			return
 		}
 		evalLatency.Observe(time.Since(item.scheduled).Seconds())
 		workerIdleTime.Add(waitElapsed.Seconds())
-		level.Debug(util.Logger).Log("msg", "processing item", "item", item)
+		level.Debug(logger2.Logger).Log("msg", "processing item", "item", item)
 		w.ruler.Evaluate(item.userID, item)
 		w.scheduler.workItemDone(*item)
-		level.Debug(util.Logger).Log("msg", "item handed back to queue", "item", item)
+		level.Debug(logger2.Logger).Log("msg", "item handed back to queue", "item", item)
 	}
 }
 

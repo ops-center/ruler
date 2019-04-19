@@ -1,0 +1,17 @@
+{
+  "id": "22",
+  "groups": [
+    {
+      "name": "cpu",
+      "rules": [
+        {
+          "record": "cpu_usage_rate",
+          "expr": "sum (rate (process_cpu_seconds_total[5m]))",
+          "labels": {
+            "per": "5m"
+          }
+        }
+      ]
+    }
+  ]
+}

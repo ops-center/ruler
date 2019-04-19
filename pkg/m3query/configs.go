@@ -1,9 +1,10 @@
 package m3query
 
 import (
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
-	"time"
 )
 
 const (
@@ -30,9 +31,8 @@ type Configs struct {
 	InsecureSkipVerify bool
 
 	// querier
-	Timeout time.Duration
+	Timeout       time.Duration
 	MaxConcurrent int
-	MaxSamples int
 }
 
 func NewConfigs() *Configs {
@@ -48,8 +48,7 @@ func (c *Configs) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&c.InsecureSkipVerify, "m3query.insecure-skip-verify", c.InsecureSkipVerify, "To skip tls verification when communicating with the m3query.")
 
 	fs.DurationVar(&c.Timeout, "querier.timeout", DefaultTimeout, "Specifies the query timeout")
-	fs.IntVar(&c.MaxConcurrent, "querier.max-concurrent", 20, "The maximum number of concurrent queries.")
-	fs.IntVar(&c.MaxSamples, "querier.max-samples", 50e6, "Maximum number of samples a single query can load into memory.")
+	fs.IntVar(&c.MaxConcurrent, "querier.max-concurrent", 1000, "The maximum number of concurrent queries.")
 }
 
 func (c *Configs) Validate() error {
@@ -61,9 +60,6 @@ func (c *Configs) Validate() error {
 	}
 	if c.MaxConcurrent < 1 {
 		return errors.New("querier.max-concurrent must be greater than 0")
-	}
-	if c.MaxSamples < 100 {
-		return errors.New("querier.max-samples must be greater than 1000")
 	}
 	return nil
 }
