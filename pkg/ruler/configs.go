@@ -33,7 +33,7 @@ type Config struct {
 func (c *Config) AddFlags(f *pflag.FlagSet) {
 	f.StringVar(&c.ExternalURL, "ruler.external-url", "", "URL of alerts return path.")
 	f.DurationVar(&c.EvaluationInterval, "ruler.evaluation-interval", 15*time.Second, "How frequently to evaluate rules")
-	f.IntVar(&c.NumWorkers, "ruler.num-workers", 1, "Number of rule evaluator worker routines in this process")
+	f.IntVar(&c.NumWorkers, "ruler.num-workers", 100, "Number of rule evaluator worker routines in this process")
 	f.StringVar(&c.AlertmanagerURL, "ruler.alertmanager-url", "", "URL of the Alertmanager to send notifications to.")
 	f.IntVar(&c.NotificationQueueCapacity, "ruler.notification-queue-capacity", 10000, "Capacity of the queue for notifications to be sent to the Alertmanager.")
 	f.DurationVar(&c.NotificationTimeout, "ruler.notification-timeout", 10*time.Second, "HTTP timeout duration when sending notifications to the Alertmanager.")

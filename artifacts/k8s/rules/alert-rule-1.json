@@ -1,0 +1,21 @@
+{
+  "id": "1122",
+  "groups": [
+    {
+      "name": "alert",
+      "rules": [
+        {
+          "alert": "alert",
+          "expr": "alert_test > 10",
+          "for": "1m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Testing alert"
+          }
+        }
+      ]
+    }
+  ]
+}

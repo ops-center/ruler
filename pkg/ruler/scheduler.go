@@ -337,7 +337,6 @@ func (s *scheduler) workItemDone(i workItem) {
 	}
 	s.Unlock()
 	if !found || len(currentRules) == 0 {
-		// Warning: this test will produce an incorrect result if the generation ever overflows
 		level.Debug(logger.Logger).Log("msg", "scheduler: stopping item", "user_id", i.userID, "group_id", i.groupID, "rule_group", i.ruleGroupName, "found", found, "len", len(currentRules))
 		return
 	}

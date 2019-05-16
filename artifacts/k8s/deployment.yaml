@@ -23,7 +23,7 @@ spec:
             - "run"
             - "--m3coordinator.url=http://m3coordinator.demo.svc:7201"
             - "--m3query.url=http://m3query.demo.svc:7201"
-            - "--ruler.alertmanager-url=http://alertmanager.demo.svc:9093"
+            - "--ruler.alertmanager-url=http://multi-alertmanager.demo.svc:9094/api/prom/alertmanager"
             - "--ruler.external-url=http://dev.ruler.com"
           ports:
             - containerPort: 8443

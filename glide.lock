@@ -1,5 +1,5 @@
-hash: 2a59967df4b2710c319e2776cbc2dd2070893213da46f3d5dbbc314ddb9dd2bd
-updated: 2019-04-16T12:46:29.355759348+06:00
+hash: ba210c0bd676d2c6746de1071b252c03939a93a2322a11be30b21870602d2914
+updated: 2019-05-15T16:13:32.264865334+06:00
 imports:
 - name: cloud.google.com/go
   version: 0fd7230b2a7505833d5f69b75cbd6c9582401479
@@ -10,11 +10,11 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: 50c98d5fbcddac827713a481a7e34a26df5e4b57
+  version: 60025f1135c977fecd189c12dbfa259d837d7a18
   subpackages:
   - util/errors
 - name: github.com/armon/go-metrics
-  version: f0300d1749da6fa982027e449ec0c7a145510c3c
+  version: ec5e00d3c878b2a97bbe0884ef45ffd1b4f669f5
 - name: github.com/aws/aws-sdk-go
   version: fde4ded7becdeae4d26bf1212916aabba79349b4
   subpackages:
@@ -87,7 +87,7 @@ imports:
 - name: github.com/codahale/hdrhistogram
   version: 3a0bb77429bd3a61596f5e8a3172445844342120
 - name: github.com/cortexproject/cortex
-  version: 005412977f765d25610e1ec04e9726072a2a4989
+  version: 21a0556ca4632c7d76796b64f0eed58c90577af4
   subpackages:
   - pkg/chunk
   - pkg/chunk/cache
@@ -168,7 +168,7 @@ imports:
 - name: github.com/golang/snappy
   version: 553a641470496b2327abcac10b36396bd98e45c9
 - name: github.com/google/btree
-  version: 7d79101e329e5a3adf994758c578dab82b90c017
+  version: 4030bb1f1f0c35b30ca7009e9ebd06849dd45306
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/googleapis/gnostic
@@ -206,19 +206,31 @@ imports:
   - runtime/internal
   - utilities
 - name: github.com/hashicorp/consul
-  version: ffc5c335508e28ee4319eee17f6c2b03c043f4ee
+  version: dc341df27e9968afeb810001dbd987a9d2f8e6fa
   subpackages:
   - api
+- name: github.com/hashicorp/errwrap
+  version: 8a6fb523712970c966eefc6b39ed2c5e74880354
 - name: github.com/hashicorp/go-cleanhttp
   version: d3fcbee8e1810ecee4bdbf415f42f84cfd0e3361
 - name: github.com/hashicorp/go-immutable-radix
   version: 27df80928bb34bb1b0d6d0e01b9e679902e7a6b5
+- name: github.com/hashicorp/go-msgpack
+  version: ad60660ecf9c5a1eae0ca32182ed72bab5807961
+  subpackages:
+  - codec
+- name: github.com/hashicorp/go-multierror
+  version: 886a7fbe3eb1c874d46f623bfa70af45f425b3d1
 - name: github.com/hashicorp/go-rootcerts
   version: 63503fb4e1eca22f9ae0f90b49c5d5538a0e87eb
+- name: github.com/hashicorp/go-sockaddr
+  version: c7188e74f6acae5a989bdc959aa779f8b9f42faf
 - name: github.com/hashicorp/golang-lru
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
   - simplelru
+- name: github.com/hashicorp/memberlist
+  version: a9da52f0668fc4321ec18e9e28dd8141621a808f
 - name: github.com/hashicorp/serf
   version: 15cfd05de3dffb3664aa37b06e91f970b825e380
   subpackages:
@@ -242,7 +254,7 @@ imports:
   subpackages:
   - oid
 - name: github.com/Masterminds/squirrel
-  version: 55303df43ec0bf2b0ce3f9c3d8c3ce07022ef76b
+  version: b4b75d10d7bfe89e062d9484ebcc2d20a0f0e71e
 - name: github.com/mattes/migrate
   version: 7dde43471463c0ee6a4183e1b5a8239ae2aa3122
   subpackages:
@@ -292,8 +304,9 @@ imports:
   subpackages:
   - difflib
 - name: github.com/prometheus/alertmanager
-  version: eb09caeea9be25c07fc0659bda49f3a38b4a0c14
+  version: 308b7620642dc147794e6686a3f94d1b6fc8ef4d
   subpackages:
+  - cluster/clusterpb
   - config
 - name: github.com/prometheus/client_golang
   version: abad2d1bd44235a26707c172eab6bca5bf2dbad3
@@ -372,6 +385,8 @@ imports:
   version: c4fab1ac1bec58281ad0667dc3f0907a9476ac47
   subpackages:
   - zk
+- name: github.com/sean-/seed
+  version: e2103e2c35297fb7e17febb81e49b312087a2372
 - name: github.com/searchlight/prom-query-handler
   version: a5c552e5e5c85a80e6544df23ac30a7e28797dd0
   subpackages:
