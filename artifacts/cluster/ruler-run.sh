@@ -1,0 +1,11 @@
+go run *.go run \
+    --m3coordinator.url=http://m3coordinator.demo.svc:7201 \
+    --m3query.url=http://m3query.demo.svc:7201 \
+    --ruler.alertmanager-url=http://multi-alertmanager.demo.svc:9094/api/prom/alertmanager \
+    --ruler.external-url=http://dev.ruler.com \
+    --ruler.api-port=18443 \
+    --ruler.num-workers=3 \
+    --cluster.listen-address=127.0.0.1:9094 \
+    --cluster.advertise-address=127.0.0.1:9094 \
+    --cluster.peer="127.0.0.1:9094" \
+    --cluster.use-host-name=false

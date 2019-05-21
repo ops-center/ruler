@@ -57,6 +57,11 @@ import:
   version: bd754a35
 - package: github.com/searchlight/prom-query-handler
   version: master
+- package: github.com/hashicorp/memberlist
+  version: v0.1.4
+- package: stathat.com/c/consistent
+  vcs: github
+  version: v1.0.0
 testImport:
 - package: github.com/stretchr/testify
   subpackages:

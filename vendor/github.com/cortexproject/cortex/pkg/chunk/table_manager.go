@@ -110,48 +110,6 @@ func (cfg *ProvisionConfig) RegisterFlags(argPrefix string, f *flag.FlagSet) {
 	f.Int64Var(&cfg.InactiveReadScaleLastN, argPrefix+".inactive-read-throughput.scale-last-n", 4, "Number of last inactive tables to enable read autoscale.")
 }
 
-// Tags is a string-string map that implements flag.Value.
-type Tags map[string]string
-
-// String implements flag.Value
-func (ts Tags) String() string {
-	if ts == nil {
-		return ""
-	}
-
-	return fmt.Sprintf("%v", map[string]string(ts))
-}
-
-// Set implements flag.Value
-func (ts *Tags) Set(s string) error {
-	if *ts == nil {
-		*ts = map[string]string{}
-	}
-
-	parts := strings.SplitN(s, "=", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("tag must of the format key=value")
-	}
-	(*ts)[parts[0]] = parts[1]
-	return nil
-}
-
-// Equals returns true is other matches ts.
-func (ts Tags) Equals(other Tags) bool {
-	if len(ts) != len(other) {
-		return false
-	}
-
-	for k, v1 := range ts {
-		v2, ok := other[k]
-		if !ok || v1 != v2 {
-			return false
-		}
-	}
-
-	return true
-}
-
 // TableManager creates and manages the provisioned throughput on DynamoDB tables
 type TableManager struct {
 	client      TableClient
@@ -237,7 +195,7 @@ func (m *TableManager) calculateExpectedTables() []TableDesc {
 	result := []TableDesc{}
 
 	for i, config := range m.schemaCfg.Configs {
-		if config.From.Time().After(mtime.Now()) {
+		if config.From.Time.Time().After(mtime.Now()) {
 			continue
 		}
 		if config.IndexTables.Period == 0 { // non-periodic table
@@ -282,18 +240,18 @@ func (m *TableManager) calculateExpectedTables() []TableDesc {
 		} else {
 			endTime := mtime.Now().Add(m.cfg.CreationGracePeriod)
 			if i+1 < len(m.schemaCfg.Configs) {
-				nextFrom := m.schemaCfg.Configs[i+1].From.Time()
+				nextFrom := m.schemaCfg.Configs[i+1].From.Time.Time()
 				if endTime.After(nextFrom) {
 					endTime = nextFrom
 				}
 			}
 			endModelTime := model.TimeFromUnix(endTime.Unix())
 			result = append(result, config.IndexTables.periodicTables(
-				config.From, endModelTime, m.cfg.IndexTables, m.cfg.CreationGracePeriod, m.maxChunkAge, m.cfg.RetentionPeriod,
+				config.From.Time, endModelTime, m.cfg.IndexTables, m.cfg.CreationGracePeriod, m.maxChunkAge, m.cfg.RetentionPeriod,
 			)...)
 			if config.ChunkTables.Prefix != "" {
 				result = append(result, config.ChunkTables.periodicTables(
-					config.From, endModelTime, m.cfg.ChunkTables, m.cfg.CreationGracePeriod, m.maxChunkAge, m.cfg.RetentionPeriod,
+					config.From.Time, endModelTime, m.cfg.ChunkTables, m.cfg.CreationGracePeriod, m.maxChunkAge, m.cfg.RetentionPeriod,
 				)...)
 			}
 		}
@@ -333,8 +291,12 @@ func (m *TableManager) partitionTables(ctx context.Context, descriptions []Table
 		// Ensure we only delete tables which have a prefix managed by Cortex.
 		tablePrefixes := map[string]struct{}{}
 		for _, cfg := range m.schemaCfg.Configs {
-			tablePrefixes[cfg.IndexTables.Prefix] = struct{}{}
-			tablePrefixes[cfg.ChunkTables.Prefix] = struct{}{}
+			if cfg.IndexTables.Prefix != "" {
+				tablePrefixes[cfg.IndexTables.Prefix] = struct{}{}
+			}
+			if cfg.ChunkTables.Prefix != "" {
+				tablePrefixes[cfg.ChunkTables.Prefix] = struct{}{}
+			}
 		}
 
 		for existingTable := range existingTables {

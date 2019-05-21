@@ -32,8 +32,8 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 		name, method, path string
 		handler            http.HandlerFunc
 	}{
-		{"get_rules", "GET", "/api/prom/rules", a.getConfig},
-		{"set_rules", "POST", "/api/prom/rules", a.setConfig},
+		{"get_rules", "GET", "/api/v1/rules", a.getConfig},
+		{"set_rules", "POST", "/api/v1/rules", a.setConfig},
 	} {
 		r.Handle(route.path, route.handler).Methods(route.method).Name(route.name)
 	}

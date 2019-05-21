@@ -16,6 +16,7 @@ import (
 )
 
 type RuleGroupsWithInfo struct {
+	UserID             string
 	ID                 string `json:"id" yaml:"id"`
 	rulefmt.RuleGroups `json:",inline" yaml:",inline"`
 	UpdatedAtInUnix    int64
@@ -96,11 +97,15 @@ func (r RuleGroupsWithInfo) Parse() ([]ruleGroup, error) {
 	return groups, nil
 }
 
-type RuleClient interface {
+type RuleGetter interface {
 	GetUserRuleGroups(userID string) ([]RuleGroupsWithInfo, error)
 	GetRuleGroup(userID string, groupID string) (RuleGroupsWithInfo, error)
 	GetAllRuleGroups() (map[string][]RuleGroupsWithInfo, error)
 	GetAllRuleGroupsUpdatedOrDeletedAfter(unixTime int64) (map[string][]RuleGroupsWithInfo, error)
+}
+
+type RuleClient interface {
+	RuleGetter
 
 	SetRuleGroup(userID string, ruleGroup RuleGroupsWithInfo) error
 
@@ -176,6 +181,7 @@ func (m *Inmem) GetAllRuleGroupsUpdatedOrDeletedAfter(after int64) (map[string][
 func (m *Inmem) SetRuleGroup(userID string, ruleGroup RuleGroupsWithInfo) error {
 	if _, found := m.storage[userID]; found {
 		m.storage[userID][ruleGroup.ID] = RuleGroupsWithInfo{
+			UserID:          userID,
 			ID:              ruleGroup.ID,
 			RuleGroups:      ruleGroup.RuleGroups,
 			UpdatedAtInUnix: time.Now().Unix(),
@@ -184,6 +190,7 @@ func (m *Inmem) SetRuleGroup(userID string, ruleGroup RuleGroupsWithInfo) error 
 	} else {
 		m.storage[userID] = map[string]RuleGroupsWithInfo{
 			ruleGroup.ID: {
+				UserID:          userID,
 				ID:              ruleGroup.ID,
 				RuleGroups:      ruleGroup.RuleGroups,
 				UpdatedAtInUnix: time.Now().Unix(),

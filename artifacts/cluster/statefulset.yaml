@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ruler-svc
+  namespace: demo
+spec:
+  ports:
+    - port: 9094
+      name: cluster
+  clusterIP: None
+  selector:
+    app: multi-tenant-ruler
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: multi-tenant-ruler
+  namespace: demo
+spec:
+  selector:
+    matchLabels:
+      app: multi-tenant-ruler
+  serviceName: ruler-svc
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: multi-tenant-ruler
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: ruler
+          image: nightfury1204/ruler:canary
+          imagePullPolicy: Always
+          args:
+            - "run"
+            - "--m3coordinator.url=http://m3coordinator.demo.svc:7201"
+            - "--m3query.url=http://m3query.demo.svc:7201"
+            - "--ruler.alertmanager-url=http://multi-alertmanager.demo.svc:9094/api/prom/alertmanager"
+            - "--ruler.external-url=http://dev.ruler.com"
+            - "--ruler.num-workers=3"
+            - "--cluster.listen-address=0.0.0.0:9094"
+            # - "--cluster.headless-svc-name=ruler-svc"
+            - "--cluster.use-host-name=true"
+            - "--cluster.peer=multi-tenant-ruler-0.ruler-svc.demo.svc:9094"
+          ports:
+            - containerPort: 8443
+              name: api
+            - containerPort: 9094
+              name: cluster
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP

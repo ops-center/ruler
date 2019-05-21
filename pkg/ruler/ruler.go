@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/searchlight/ruler/pkg/cluster"
+
 	"github.com/prometheus/prometheus/discovery"
 
 	logger2 "github.com/searchlight/ruler/pkg/logger"
@@ -32,7 +34,6 @@ import (
 	"golang.org/x/net/context/ctxhttp"
 
 	"github.com/weaveworks/common/instrument"
-	"github.com/weaveworks/common/user"
 )
 
 var (
@@ -86,6 +87,10 @@ type Ruler struct {
 	// Per-user notifiers with separate queues.
 	notifiersMtx sync.Mutex
 	notifiers    map[string]*rulerNotifier
+
+	// for cluster
+	peer        *cluster.Peer
+	distributor *Distributor
 }
 
 // rulerNotifier bundles a notifier.Manager together with an associated
@@ -162,7 +167,7 @@ func NewRuler(cfg *Config, queryFunc rules.QueryFunc, w m3coordinator.Writer) (*
 		return nil, err
 	}
 
-	return &Ruler{
+	rulr := &Ruler{
 		queryFunc:        queryFunc,
 		writer:           w,
 		alertExternalURL: externalUrl,
@@ -171,7 +176,49 @@ func NewRuler(cfg *Config, queryFunc rules.QueryFunc, w m3coordinator.Writer) (*
 		notifiers:        map[string]*rulerNotifier{},
 		groupTimeout:     cfg.GroupTimeout,
 		metrics:          rules.NewGroupMetrics(prometheus.DefaultRegisterer),
-	}, nil
+	}
+
+	// for cluster
+	if cfg.Cluster.BindAddr != "" {
+		delegate, err := NewEventDelegate(gklog.With(logger2.Logger, "domain", "cluster event delegate"))
+		if err != nil {
+			return nil, err
+		}
+
+		// todo: delegate
+		peer, err := cluster.Create(cfg.Cluster,
+			gklog.With(logger2.Logger, "domain", "cluster"),
+			prometheus.DefaultRegisterer,
+			nil)
+		if err != nil {
+			return nil, err
+		}
+
+		distributor, err := NewDistributor(peer)
+		if err != nil {
+			return nil, err
+		}
+		delegate.SetDo(distributor.Refresh)
+
+		// join in the cluster
+		err = peer.Join()
+		if err != nil {
+			return nil, err
+		}
+
+		// settle the cluster before start serving
+		peer.Settle()
+
+		// Do initial refresh
+		distributor.Refresh()
+
+		// TODO: should use flag for this
+		go distributor.HandleRefresh(time.Second * 3)
+
+		rulr.peer = peer
+		rulr.distributor = distributor
+	}
+	return rulr, nil
 }
 
 // Builds a Prometheus config.Config from a ruler.Config with just the required
@@ -309,7 +356,7 @@ func (r *Ruler) getOrCreateNotifier(userID string) (*notifier.Manager, error) {
 // Evaluate a list of rules in the given context.
 func (r *Ruler) Evaluate(userID string, item *workItem) {
 	// TODO:
-	ctx := user.InjectOrgID(context.Background(), userID)
+	ctx := context.Background()
 	logger := gklog.With(logger2.Logger, "user_id", userID)
 	level.Debug(logger).Log("msg", "evaluating rules...", "num_rules", len(item.group.Rules()))
 	ctx, cancelTimeout := context.WithTimeout(ctx, r.groupTimeout)
@@ -332,12 +379,54 @@ func (r *Ruler) Evaluate(userID string, item *workItem) {
 
 // Stop stops the Ruler.
 func (r *Ruler) Stop() {
+	if r.peer != nil {
+		r.peer.Leave(10 * time.Second)
+	}
+
 	r.notifiersMtx.Lock()
 	defer r.notifiersMtx.Unlock()
 
 	for _, n := range r.notifiers {
 		n.stop()
 	}
+}
+
+func (r *Ruler) ClusterStatus(w http.ResponseWriter, req *http.Request) {
+	status := struct {
+		Status string                 `json:"status"`
+		Peers  map[string]interface{} `json:"peers,omitempty"`
+	}{}
+	if r.peer == nil {
+		status.Status = "disabled"
+	} else {
+		status.Status = r.peer.Status()
+		status.Peers = r.peer.Info()
+	}
+	if err := json.NewEncoder(w).Encode(status); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	return
+}
+
+func (r *Ruler) HashRingStatus(w http.ResponseWriter, req *http.Request) {
+	status := struct {
+		Status   string   `json:"status"`
+		NodeList []string `json:"nodeList"`
+	}{}
+	if r.distributor == nil {
+		status.Status = "disabled"
+	} else {
+		status.Status = "enabled"
+		status.NodeList = r.distributor.MemberNodeList()
+	}
+	if err := json.NewEncoder(w).Encode(status); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	return
 }
 
 // Server is a rules server.
@@ -347,12 +436,19 @@ type Server struct {
 }
 
 // NewServer makes a new rule processing server.
-func NewServer(cfg *Config, ruler *Ruler, rc RuleClient) (*Server, error) {
+func NewServer(cfg *Config, ruler *Ruler, rg RuleGetter) (*Server, error) {
 	// TODO: Separate configuration for polling interval.
-	s := newScheduler(rc, cfg.EvaluationInterval, cfg.EvaluationInterval, ruler.newGroup)
+
+	rgw, err := NewRuleGetterWrapper(ruler.distributor, rg)
+	if err != nil {
+		return nil, err
+	}
+
+	s := newScheduler(rgw, cfg.EvaluationInterval, cfg.PollInterval, ruler.newGroup)
 	if cfg.NumWorkers <= 0 {
 		return nil, fmt.Errorf("must have at least 1 worker, got %d", cfg.NumWorkers)
 	}
+
 	workers := make([]worker, cfg.NumWorkers)
 	for i := 0; i < cfg.NumWorkers; i++ {
 		workers[i] = newWorker(&s, ruler)
@@ -426,6 +522,17 @@ func (w *worker) Run() {
 		evalLatency.Observe(time.Since(item.scheduled).Seconds())
 		workerIdleTime.Add(waitElapsed.Seconds())
 		level.Debug(logger2.Logger).Log("msg", "processing item", "item", item)
+
+		// Add work distribution
+		if w.ruler.distributor != nil {
+			if ok, err := w.ruler.distributor.IsAssigned(item.userID); err != nil {
+				level.Warn(logger2.Logger).Log("msg", "check user is assigned", "err", err)
+			} else if !ok {
+				// this user is not assigned to this node
+				continue
+			}
+		}
+
 		w.ruler.Evaluate(item.userID, item)
 		w.scheduler.workItemDone(*item)
 		level.Debug(logger2.Logger).Log("msg", "item handed back to queue", "item", item)
