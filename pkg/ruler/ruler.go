@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/searchlight/ruler/pkg/cluster"
 
 	"github.com/prometheus/prometheus/discovery"
@@ -23,7 +25,6 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
-	config_util "github.com/prometheus/common/config"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/config"
 	sd_config "github.com/prometheus/prometheus/discovery/config"
@@ -224,50 +225,41 @@ func NewRuler(cfg *Config, queryFunc rules.QueryFunc, w m3coordinator.Writer) (*
 // Builds a Prometheus config.Config from a ruler.Config with just the required
 // options to configure notifications to Alertmanager.
 func buildNotifierConfig(rulerConfig *Config) (*config.Config, error) {
-	if rulerConfig.AlertmanagerURL == "" {
+	if len(rulerConfig.AlertmanagerURL) == 0 {
 		return &config.Config{}, nil
 	}
 
-	u, err := url.Parse(rulerConfig.AlertmanagerURL)
-	if err != nil {
-		return nil, err
-	}
+	amConfigs := []*config.AlertmanagerConfig{}
+	for _, addr := range rulerConfig.AlertmanagerURL {
+		u, err := url.Parse(addr)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse alertmanager url")
+		}
 
-	sdConfig := sd_config.ServiceDiscoveryConfig{
-		StaticConfigs: []*targetgroup.Group{
-			{
-				Targets: []model.LabelSet{
-					{
-						model.AddressLabel: model.LabelValue(u.Host),
+		sdConfig := sd_config.ServiceDiscoveryConfig{
+			StaticConfigs: []*targetgroup.Group{
+				{
+					Targets: []model.LabelSet{
+						{
+							model.AddressLabel: model.LabelValue(u.Host),
+						},
 					},
 				},
 			},
-		},
-	}
+		}
 
-	amConfig := &config.AlertmanagerConfig{
-		Scheme:                 u.Scheme,
-		PathPrefix:             u.Path,
-		Timeout:                model.Duration(rulerConfig.NotificationTimeout),
-		ServiceDiscoveryConfig: sdConfig,
+		amConfigs = append(amConfigs, &config.AlertmanagerConfig{
+			Scheme:                 u.Scheme,
+			PathPrefix:             u.Path,
+			Timeout:                model.Duration(rulerConfig.NotificationTimeout),
+			ServiceDiscoveryConfig: sdConfig,
+		})
 	}
 
 	promConfig := &config.Config{
 		AlertingConfig: config.AlertingConfig{
-			AlertmanagerConfigs: []*config.AlertmanagerConfig{amConfig},
+			AlertmanagerConfigs: amConfigs,
 		},
-	}
-
-	if u.User != nil {
-		amConfig.HTTPClientConfig = config_util.HTTPClientConfig{
-			BasicAuth: &config_util.BasicAuth{
-				Username: u.User.Username(),
-			},
-		}
-
-		if password, isSet := u.User.Password(); isSet {
-			amConfig.HTTPClientConfig.BasicAuth.Password = config_util.Secret(password)
-		}
 	}
 	return promConfig, nil
 }
@@ -446,7 +438,7 @@ func NewServer(cfg *Config, ruler *Ruler, rg RuleGetter) (*Server, error) {
 
 	s := newScheduler(rgw, cfg.EvaluationInterval, cfg.PollInterval, ruler.newGroup)
 	if cfg.NumWorkers <= 0 {
-		return nil, fmt.Errorf("must have at least 1 worker, got %d", cfg.NumWorkers)
+		return nil, errors.Errorf("must have at least 1 worker, got %d", cfg.NumWorkers)
 	}
 
 	workers := make([]worker, cfg.NumWorkers)

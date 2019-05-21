@@ -144,7 +144,8 @@ func (p *Peer) Join() error {
 
 	go p.handleRefresh(DefaultRefreshInterval)
 
-	return err
+	// no need to send error
+	return nil
 }
 
 type logWriter struct {
