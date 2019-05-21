@@ -1,9 +1,10 @@
 package cluster
 
 import (
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
-	"time"
 )
 
 type Config struct {
@@ -41,13 +42,16 @@ type Config struct {
 	// Use host name as Cluster Node name. If it is not set, then random name will be generated.
 	// Node name needs to be unique across the cluster
 	UseHostName bool
-}
 
+	// It is used to find peers address. It is useful when deploying using Kubernetes StateFulSet.
+	HeadlessSvcName string
+}
 
 // AddFlags adds the flags required to config this to the given FlagSet.
 func (cfg *Config) AddFlags(f *pflag.FlagSet) {
 	f.StringVar(&cfg.BindAddr, "cluster.listen-address", "0.0.0.0:9094", "Listen address for cluster.")
 	f.StringVar(&cfg.AdvertiseAddr, "cluster.advertise-address", "", "Explicit address to advertise in cluster.")
+	f.StringVar(&cfg.HeadlessSvcName, "cluster.headless-svc-name", "", "It is used to find peers address. It is useful when deploying using Kubernetes StateFulSet.")
 	f.StringArrayVar(&cfg.KnownPeers, "cluster.peer", []string{}, "Initial peers (may be repeated).")
 	f.DurationVar(&cfg.GossipInterval, "cluster.gossip-interval", DefaultGossipInterval, "Interval between sending gossip messages. By lowering this value (more frequent) gossip messages are propagated across the cluster more quickly at the expense of increased bandwidth.")
 	f.DurationVar(&cfg.PushPullInterval, "cluster.pushpull-interval", DefaultPushPullInterval, "Interval for gossip state syncs. Setting this interval lower (more frequent) will increase convergence speeds across larger clusters at the expense of increased bandwidth usage.")
@@ -60,9 +64,6 @@ func (cfg *Config) AddFlags(f *pflag.FlagSet) {
 func (cfg *Config) Validate() error {
 	if cfg.BindAddr == "" {
 		return errors.New("--cluster.listen-address must be non empty")
-	}
-	if cfg.AdvertiseAddr == "" {
-		return errors.New("--cluster.advertise-address must be non empty")
 	}
 	return nil
 }

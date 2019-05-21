@@ -1,5 +1,5 @@
-hash: ba210c0bd676d2c6746de1071b252c03939a93a2322a11be30b21870602d2914
-updated: 2019-05-15T16:13:32.264865334+06:00
+hash: 14f3ee43f0bc3775b1c48a2e504343c6e6ab1282e89638a38e9fd11adc813546
+updated: 2019-05-17T15:40:04.573123423+06:00
 imports:
 - name: cloud.google.com/go
   version: 0fd7230b2a7505833d5f69b75cbd6c9582401479
@@ -87,7 +87,7 @@ imports:
 - name: github.com/codahale/hdrhistogram
   version: 3a0bb77429bd3a61596f5e8a3172445844342120
 - name: github.com/cortexproject/cortex
-  version: 21a0556ca4632c7d76796b64f0eed58c90577af4
+  version: 975f5bb837c7909d97dd21561f48117fbb757417
   subpackages:
   - pkg/chunk
   - pkg/chunk/cache
@@ -206,7 +206,7 @@ imports:
   - runtime/internal
   - utilities
 - name: github.com/hashicorp/consul
-  version: dc341df27e9968afeb810001dbd987a9d2f8e6fa
+  version: 8473fc1476e3e8d92cb46a37549febf016236405
   subpackages:
   - api
 - name: github.com/hashicorp/errwrap
@@ -230,7 +230,7 @@ imports:
   subpackages:
   - simplelru
 - name: github.com/hashicorp/memberlist
-  version: a9da52f0668fc4321ec18e9e28dd8141621a808f
+  version: e1138a6a4d8a6eaec6c919aeae5efbe4d69b1ece
 - name: github.com/hashicorp/serf
   version: 15cfd05de3dffb3664aa37b06e91f970b825e380
   subpackages:
@@ -306,7 +306,6 @@ imports:
 - name: github.com/prometheus/alertmanager
   version: 308b7620642dc147794e6686a3f94d1b6fc8ef4d
   subpackages:
-  - cluster/clusterpb
   - config
 - name: github.com/prometheus/client_golang
   version: abad2d1bd44235a26707c172eab6bca5bf2dbad3
@@ -422,7 +421,7 @@ imports:
   subpackages:
   - metrics
 - name: github.com/weaveworks/common
-  version: 87611edc252e21e7de58c08270384450b126b48a
+  version: 283749cfd16f7c25576c4a896ffb42f8420c5ded
   subpackages:
   - errors
   - httpgrpc
@@ -704,4 +703,6 @@ imports:
   version: 8139d8cb77af419532b33dfa7dd09fbc5f1d344f
 - name: sigs.k8s.io/yaml
   version: fd68e9863619f6ec2fdd8625fe1f02e7c877e480
+- name: stathat.com/c/consistent
+  version: ad91dc4a3a642859730ff3d65929fce009bfdc23
 testImports: []

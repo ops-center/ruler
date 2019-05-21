@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"net"
 	"strconv"
@@ -20,17 +21,17 @@ import (
 
 // Peer is a single peer in a gossip cluster.
 type Peer struct {
-	cfg *Config
-	mlist    *memberlist.Memberlist
+	cfg   *Config
+	mlist *memberlist.Memberlist
 
-	mtx    sync.RWMutex
-	stopc  chan struct{}
+	mtx   sync.RWMutex
+	stopc chan struct{}
 
 	// This should only updated/handle by (p *Peer) Settle() function
-	readyB *BlockManager
+	readyc chan struct{}
 
-	failedRefreshCounter       prometheus.Counter
-	refreshCounter             prometheus.Counter
+	failedRefreshCounter prometheus.Counter
+	refreshCounter       prometheus.Counter
 
 	logger log.Logger
 }
@@ -59,9 +60,11 @@ func Create(cf *Config, l log.Logger, reg prometheus.Registerer, delegate member
 
 	var advertiseHost string
 	var advertisePort int
-	if cf.AdvertiseAddr != "" {
+	if advertiseAddr, err := getAdvertiseAddr(cf); err != nil {
+		return nil, errors.Wrap(err, "failed to get advertise address")
+	} else {
 		var advertisePortStr string
-		advertiseHost, advertisePortStr, err = net.SplitHostPort(cf.AdvertiseAddr)
+		advertiseHost, advertisePortStr, err = net.SplitHostPort(advertiseAddr)
 		if err != nil {
 			return nil, errors.Wrap(err, "invalid advertise address")
 		}
@@ -69,22 +72,26 @@ func Create(cf *Config, l log.Logger, reg prometheus.Registerer, delegate member
 		if err != nil {
 			return nil, errors.Wrap(err, "invalid advertise address, wrong port")
 		}
-	} else {
-		return nil, errors.New("empty advertise address")
 	}
 
-	level.Debug(l).Log("known peers", strings.Join(cf.KnownPeers, ","))
+	knownPeers, err := getPeers(cf)
+	if err != nil {
+		// No need to return error. handleRefresh() will try to rejoin
+		// return error will cause problem in case of deployment using statefulset, dns doesn't resolve up until pod is ready.
+		level.Warn(l).Log("msg", "failed to get known peers", "err", err)
+	}
+	level.Debug(l).Log("known peers", strings.Join(knownPeers, ","))
 
 	p := &Peer{
 		stopc:  make(chan struct{}),
-		readyB: NewBlockManager(),
+		readyc: make(chan struct{}),
 		logger: l,
 		cfg:    cf,
 	}
 
 	p.register(reg)
 
-	retransmit := len(cf.KnownPeers) / 2
+	retransmit := len(knownPeers) / 2
 	if retransmit < 3 {
 		retransmit = 3
 	}
@@ -105,8 +112,8 @@ func Create(cf *Config, l log.Logger, reg prometheus.Registerer, delegate member
 	cfg.GossipInterval = cf.GossipInterval
 	cfg.PushPullInterval = cf.PushPullInterval
 	cfg.TCPTimeout = cf.TcpTimeout
-	cfg.ProbeTimeout =cf.ProbeTimeout
-	cfg.ProbeInterval =cf.ProbeInterval
+	cfg.ProbeTimeout = cf.ProbeTimeout
+	cfg.ProbeInterval = cf.ProbeInterval
 	cfg.LogOutput = &logWriter{l: l}
 	cfg.GossipNodes = retransmit
 	cfg.UDPBufferSize = maxGossipPacketSize
@@ -121,11 +128,18 @@ func Create(cf *Config, l log.Logger, reg prometheus.Registerer, delegate member
 }
 
 func (p *Peer) Join() error {
-	n, err := p.mlist.Join(p.cfg.KnownPeers)
+	peers, err := getPeers(p.cfg)
 	if err != nil {
-		level.Warn(p.logger).Log("msg", "failed to join cluster", "err", err)
+		// No need to return error. handleRefresh() will try to rejoin
+		// return error will cause problem in case of deployment using statefulset, dns doesn't resolve up until pod is ready.
+		level.Warn(p.logger).Log("msg", "failed to get known peers", "err", err)
 	} else {
-		level.Debug(p.logger).Log("msg", "joined cluster", "peers", n)
+		n, err := p.mlist.Join(peers)
+		if err != nil {
+			level.Warn(p.logger).Log("msg", "failed to join cluster", "err", err)
+		} else {
+			level.Debug(p.logger).Log("msg", "joined cluster", "peers", n)
+		}
 	}
 
 	go p.handleRefresh(DefaultRefreshInterval)
@@ -170,10 +184,14 @@ func (p *Peer) handleRefresh(d time.Duration) {
 
 func (p *Peer) refresh() {
 	logger := log.With(p.logger, "msg", "refresh")
-
-	resolvedPeers, err := resolvePeers(context.Background(), p.cfg.KnownPeers, net.Resolver{})
+	knownPeers, err := getPeers(p.cfg)
 	if err != nil {
-		level.Debug(logger).Log("peers", p.cfg.KnownPeers, "err", err)
+		level.Warn(logger).Log("msg", "failed to get known peers", "err", err.Error())
+	}
+
+	resolvedPeers, err := resolvePeers(context.Background(), knownPeers, net.Resolver{})
+	if err != nil {
+		level.Debug(logger).Log("peers", knownPeers, "err", err)
 		return
 	}
 
@@ -218,12 +236,17 @@ func (p *Peer) ClusterSize() int {
 
 // Return true when router has settled.
 func (p *Peer) Ready() bool {
-	return !p.readyB.IsBlocked()
+	select {
+	case <-p.readyc:
+		return true
+	default:
+	}
+	return false
 }
 
 // Wait until Settle() has finished.
 func (p *Peer) WaitReady() {
-	p.readyB.WaitUntilUnBlocked()
+	<-p.readyc
 }
 
 // Return a status string representing the peer state.
@@ -240,11 +263,26 @@ func (p *Peer) Status() string {
 func (p *Peer) Info() map[string]interface{} {
 	p.mtx.RLock()
 	defer p.mtx.RUnlock()
+	info := map[string]interface{}{}
 
-	return map[string]interface{}{
-		"self":    p.mlist.LocalNode(),
-		"members": p.mlist.Members(),
+	type nodeInfo struct {
+		Name string `json:"name"`
+		Addr string `json:"address"`
 	}
+	self := p.mlist.LocalNode()
+	info["self"] = nodeInfo{
+		Name: self.Name,
+		Addr: fmt.Sprintf("%s:%d", self.Addr.String(), self.Port),
+	}
+	mList := []nodeInfo{}
+	for _, nd := range p.mlist.Members() {
+		mList = append(mList, nodeInfo{
+			Name: nd.Name,
+			Addr: fmt.Sprintf("%s:%d", nd.Addr.String(), nd.Port),
+		})
+	}
+	info["peers"] = mList
+	return info
 }
 
 // Self returns the node information about the peer itself.
@@ -261,12 +299,6 @@ func (p *Peer) Peers() []*memberlist.Node {
 // The idea is that we don't want to start "working" before we get a chance to know stable number of members.
 // Inspired from https://github.com/apache/cassandra/blob/7a40abb6a5108688fb1b10c375bb751cbb782ea4/src/java/org/apache/cassandra/gms/Gossiper.java
 func (p *Peer) Settle() {
-	if !p.readyB.Block() {
-		// already Cluster Settle is running
-		return
-	}
-	defer p.readyB.UnBlock()
-
 	const NumOkayRequired = 3
 	level.Info(p.logger).Log("msg", "Waiting for gossip to settle...")
 	start := time.Now()
@@ -278,8 +310,9 @@ func (p *Peer) Settle() {
 		case <-p.stopc:
 			elapsed := time.Since(start)
 			level.Info(p.logger).Log("msg", "gossip not settled but continuing anyway", "polls", totalPolls, "elapsed", elapsed)
+			close(p.readyc)
 			return
-		case <-time.After(p.cfg.GossipInterval*10):
+		case <-time.After(p.cfg.GossipInterval * 10):
 		}
 		elapsed := time.Since(start)
 		n := len(p.Peers())
@@ -297,6 +330,7 @@ func (p *Peer) Settle() {
 		nPeers = n
 		totalPolls++
 	}
+	close(p.readyc)
 }
 
 func resolvePeers(ctx context.Context, peers []string, res net.Resolver) ([]string, error) {

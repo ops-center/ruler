@@ -95,7 +95,7 @@ type userRules struct {
 type groupFactory func(userID string, groupID string, ruleGroupName string, rls []rules.Rule) (*group, error)
 
 type scheduler struct {
-	ruleClient         RuleClient
+	ruleClient         RuleGetter
 	evaluationInterval time.Duration // how often we re-evaluate each rule set
 	q                  *SchedulingQueue
 
@@ -112,7 +112,7 @@ type scheduler struct {
 }
 
 // newScheduler makes a new scheduler.
-func newScheduler(rc RuleClient, evaluationInterval, pollInterval time.Duration, groupFn groupFactory) scheduler {
+func newScheduler(rc RuleGetter, evaluationInterval, pollInterval time.Duration, groupFn groupFactory) scheduler {
 	return scheduler{
 		ruleClient:         rc,
 		evaluationInterval: evaluationInterval,
@@ -240,6 +240,7 @@ func (s *scheduler) addNewRules(now time.Time, ruleList map[string][]RuleGroupsW
 	totalUserRules.Set(float64(lenRules))
 }
 
+// TODO: think about the lock, will it block it for long time
 // add or update or delete rules
 func (s *scheduler) addOrRemoveUserRules(now time.Time, hasher hash.Hash64, userID string, rList []RuleGroupsWithInfo) {
 	rulesByGroup := map[string][]ruleGroup{}
@@ -281,6 +282,7 @@ func (s *scheduler) addOrRemoveUserRules(now time.Time, hasher hash.Hash64, user
 
 	evalTime := s.computeNextEvalTime(hasher, now, userID)
 	workItems := []workItem{}
+	// TODO: Do we need to go through every rule or just updated rule will do
 	for groupID, rules := range rulesByGroup {
 		level.Debug(logger.Logger).Log("msg", "scheduler: updating rules for user and group", "user_id", userID, "group", groupID, "num_rules", len(rules))
 
@@ -295,7 +297,6 @@ func (s *scheduler) addOrRemoveUserRules(now time.Time, hasher hash.Hash64, user
 			}
 			workItems = append(workItems, workItem{userID, groupID, rg.ruleGroupName, g, evalTime})
 		}
-
 	}
 
 	for _, i := range workItems {
@@ -340,6 +341,9 @@ func (s *scheduler) workItemDone(i workItem) {
 		level.Debug(logger.Logger).Log("msg", "scheduler: stopping item", "user_id", i.userID, "group_id", i.groupID, "rule_group", i.ruleGroupName, "found", found, "len", len(currentRules))
 		return
 	}
+
+	// TODO: Add check whether this user belongs to this node
+
 	next := i.Defer(s.evaluationInterval)
 	level.Debug(logger.Logger).Log("msg", "scheduler: work item rescheduled", "item", i, "time", next.scheduled.Format(timeLogFormat))
 	s.addWorkItem(next)

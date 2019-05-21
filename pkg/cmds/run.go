@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/searchlight/ruler/pkg/m3query"
@@ -15,7 +16,7 @@ import (
 )
 
 func NewCmdRun() *cobra.Command {
-	rulerCfg := &ruler.Config{}
+	rulerCfg := ruler.NewRulerConfig()
 	m3coordinatorCfg := &m3coordinator.Configs{}
 	m3queryCfg := &m3query.Configs{}
 
@@ -64,8 +65,10 @@ func NewCmdRun() *cobra.Command {
 			rulerAPI := ruler.NewAPI(rulerClient)
 
 			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/cluster/status", rulr.ClusterStatus)
+			r.HandleFunc("/api/v1/ring/status", rulr.HashRingStatus)
 			rulerAPI.RegisterRoutes(r)
-			if err := http.ListenAndServe("0.0.0.0:8443", r); err != nil {
+			if err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%s", rulerCfg.APIPort), r); err != nil {
 				return err
 			}
 			return nil
