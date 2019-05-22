@@ -28,7 +28,7 @@ type Config struct {
 	NumWorkers int
 
 	// URL of the Alertmanager to send notifications to.
-	AlertmanagerURL string
+	AlertmanagerURL []string
 
 	// Capacity of the queue for notifications to be sent to the Alertmanager.
 	NotificationQueueCapacity int
@@ -53,7 +53,7 @@ func (c *Config) AddFlags(f *pflag.FlagSet) {
 	f.DurationVar(&c.EvaluationInterval, "ruler.evaluation-interval", 15*time.Second, "How frequently to evaluate rules")
 	f.DurationVar(&c.PollInterval, "ruler.poll-interval", 15*time.Second, "How frequently to fetch user ruler configs")
 	f.IntVar(&c.NumWorkers, "ruler.num-workers", 100, "Number of rule evaluator worker routines in this process")
-	f.StringVar(&c.AlertmanagerURL, "ruler.alertmanager-url", "", "URL of the Alertmanager to send notifications to.")
+	f.StringArrayVar(&c.AlertmanagerURL, "ruler.alertmanager-url", []string{}, "URL of the Alertmanager to send notifications to.")
 	f.IntVar(&c.NotificationQueueCapacity, "ruler.notification-queue-capacity", 10000, "Capacity of the queue for notifications to be sent to the Alertmanager.")
 	f.DurationVar(&c.NotificationTimeout, "ruler.notification-timeout", 10*time.Second, "HTTP timeout duration when sending notifications to the Alertmanager.")
 	f.DurationVar(&c.GroupTimeout, "ruler.group-timeout", 10*time.Second, "Timeout for rule group evaluation, including sending result to ingester")
@@ -68,8 +68,8 @@ func (c *Config) Validate() error {
 	if c.APIPort == "" {
 		return errors.New("ruler.api-port must be non empty")
 	}
-	if c.AlertmanagerURL == "" {
-		return errors.New("ruler.alertmanager-url must be non empty")
+	if len(c.AlertmanagerURL) == 0 {
+		return errors.New("ruler.alertmanagers-url must be non empty")
 	}
 
 	if c.Cluster.BindAddr != "" {
