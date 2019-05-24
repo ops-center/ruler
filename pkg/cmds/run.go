@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-kit/kit/log"
+	"github.com/searchlight/ruler/pkg/ruler/api"
+	"github.com/searchlight/ruler/pkg/storage/etcd"
+
 	"github.com/searchlight/ruler/pkg/m3query"
 
 	"github.com/searchlight/ruler/pkg/logger"
@@ -17,6 +21,8 @@ import (
 
 func NewCmdRun() *cobra.Command {
 	rulerCfg := ruler.NewRulerConfig()
+	etcdCfg := etcd.NewConfig()
+
 	m3coordinatorCfg := &m3coordinator.Configs{}
 	m3queryCfg := &m3query.Configs{}
 
@@ -38,6 +44,9 @@ func NewCmdRun() *cobra.Command {
 			if err := m3queryCfg.Validate(); err != nil {
 				return err
 			}
+			if err := etcdCfg.Validate(); err != nil {
+				return err
+			}
 
 			writer, err := m3coordinator.NewWriter(m3coordinatorCfg)
 			if err != nil {
@@ -55,14 +64,23 @@ func NewCmdRun() *cobra.Command {
 			}
 			defer rulr.Stop()
 
-			rulerClient := ruler.NewInmemRuleStore()
-			rulerServer, err := ruler.NewServer(rulerCfg, rulr, rulerClient)
+			ruleStoreClient, err := etcd.NewClient(etcdCfg, log.With(logger.Logger, "domain", "etcd rule storage"))
+			if err != nil {
+				return err
+			}
+
+			ruleGetter, err := ruler.NewRuleGetterWrapper(rulr.Distributor(), ruleStoreClient, ruleStoreClient)
+			if err != nil {
+				return err
+			}
+
+			rulerServer, err := ruler.NewServer(rulerCfg, rulr, ruleGetter)
 			if err != nil {
 				return err
 			}
 			defer rulerServer.Stop()
 
-			rulerAPI := ruler.NewAPI(rulerClient)
+			rulerAPI := api.NewAPI(ruleStoreClient)
 
 			r := mux.NewRouter()
 			r.HandleFunc("/api/v1/cluster/status", rulr.ClusterStatus)
@@ -78,6 +96,7 @@ func NewCmdRun() *cobra.Command {
 	rulerCfg.AddFlags(cmd.Flags())
 	m3coordinatorCfg.AddFlags(cmd.Flags())
 	m3queryCfg.AddFlags(cmd.Flags())
+	etcdCfg.AddFlags(cmd.Flags())
 
 	return cmd
 }

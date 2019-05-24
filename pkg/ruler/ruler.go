@@ -94,6 +94,10 @@ type Ruler struct {
 	distributor *Distributor
 }
 
+func (r *Ruler) Distributor() *Distributor {
+	return r.distributor
+}
+
 // rulerNotifier bundles a notifier.Manager together with an associated
 // Alertmanager service discovery manager and handles the lifecycle
 // of both actors.
@@ -181,12 +185,6 @@ func NewRuler(cfg *Config, queryFunc rules.QueryFunc, w m3coordinator.Writer) (*
 
 	// for cluster
 	if cfg.Cluster.BindAddr != "" {
-		delegate, err := NewEventDelegate(gklog.With(logger2.Logger, "domain", "cluster event delegate"))
-		if err != nil {
-			return nil, err
-		}
-
-		// todo: delegate
 		peer, err := cluster.Create(cfg.Cluster,
 			gklog.With(logger2.Logger, "domain", "cluster"),
 			prometheus.DefaultRegisterer,
@@ -199,7 +197,6 @@ func NewRuler(cfg *Config, queryFunc rules.QueryFunc, w m3coordinator.Writer) (*
 		if err != nil {
 			return nil, err
 		}
-		delegate.SetDo(distributor.Refresh)
 
 		// join in the cluster
 		err = peer.Join()
@@ -431,12 +428,7 @@ type Server struct {
 func NewServer(cfg *Config, ruler *Ruler, rg RuleGetter) (*Server, error) {
 	// TODO: Separate configuration for polling interval.
 
-	rgw, err := NewRuleGetterWrapper(ruler.distributor, rg)
-	if err != nil {
-		return nil, err
-	}
-
-	s := newScheduler(rgw, cfg.EvaluationInterval, cfg.PollInterval, ruler.newGroup)
+	s := newScheduler(rg, cfg.EvaluationInterval, cfg.PollInterval, ruler.newGroup)
 	if cfg.NumWorkers <= 0 {
 		return nil, errors.Errorf("must have at least 1 worker, got %d", cfg.NumWorkers)
 	}

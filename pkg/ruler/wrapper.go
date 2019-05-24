@@ -1,23 +1,39 @@
 package ruler
 
+import "sync"
+
+const (
+	UpdateChannelBufferSize = 10000
+)
+
 type RuleGetterWrapper struct {
-	d          *Distributor
-	ruleGetter RuleGetter
+	d           *Distributor
+	ruleGetter  RuleClient
+	ruleWatcher RuleWatcher
+
+	mtx sync.Mutex
+
+	// TODO: keep prometheus metric for the length?
+	newUpdates []RuleGroupsWithInfo
 }
 
-func NewRuleGetterWrapper(d *Distributor, r RuleGetter) (RuleGetter, error) {
-	return &RuleGetterWrapper{
-		d:          d,
-		ruleGetter: r,
-	}, nil
-}
-
-func (r *RuleGetterWrapper) GetUserRuleGroups(userID string) ([]RuleGroupsWithInfo, error) {
-	rgs, err := r.ruleGetter.GetUserRuleGroups(userID)
-	if err != nil {
-		return nil, err
+func NewRuleGetterWrapper(d *Distributor, rg RuleClient, rw RuleWatcher) (RuleGetter, error) {
+	r := &RuleGetterWrapper{
+		d:           d,
+		ruleGetter:  rg,
+		ruleWatcher: rw,
+		newUpdates:  []RuleGroupsWithInfo{},
 	}
+	go r.RunUpdatesCollector()
 
+	return r, nil
+}
+
+func (r *RuleGetterWrapper) GetAllRuleGroups() ([]RuleGroupsWithInfo, error) {
+	rgs, err := r.ruleGetter.GetAllRuleGroups()
+	if err != nil {
+		return rgs, err
+	}
 	if r.d != nil {
 		newRgs := []RuleGroupsWithInfo{}
 		for _, rg := range rgs {
@@ -27,43 +43,36 @@ func (r *RuleGetterWrapper) GetUserRuleGroups(userID string) ([]RuleGroupsWithIn
 		}
 		return newRgs, nil
 	}
-	return rgs, nil
+	return rgs, err
 }
 
-func (r *RuleGetterWrapper) GetRuleGroup(userID string, groupID string) (RuleGroupsWithInfo, error) {
-	return r.ruleGetter.GetRuleGroup(userID, groupID)
-}
+func (r *RuleGetterWrapper) GetAllUpdatedRuleGroups() ([]RuleGroupsWithInfo, error) {
+	// slice copy
+	var list []RuleGroupsWithInfo
+	r.mtx.Lock()
+	list = r.newUpdates
+	r.newUpdates = []RuleGroupsWithInfo{}
+	r.mtx.Unlock()
 
-func (r *RuleGetterWrapper) GetAllRuleGroups() (map[string][]RuleGroupsWithInfo, error) {
-	rgs, err := r.ruleGetter.GetAllRuleGroups()
-	if err != nil {
-		return rgs, err
-	}
 	if r.d != nil {
-		newRgs := map[string][]RuleGroupsWithInfo{}
-		for uid, rg := range rgs {
-			if assigned, err := r.d.IsAssigned(uid); err == nil && assigned {
-				newRgs[uid] = rg
+		newRgs := []RuleGroupsWithInfo{}
+		for _, rg := range list {
+			if assigned, err := r.d.IsAssigned(rg.UserID); err == nil && assigned {
+				newRgs = append(newRgs, rg)
 			}
 		}
 		return newRgs, nil
 	}
-	return rgs, err
+	return list, nil
 }
 
-func (r *RuleGetterWrapper) GetAllRuleGroupsUpdatedOrDeletedAfter(after int64) (map[string][]RuleGroupsWithInfo, error) {
-	rgs, err := r.ruleGetter.GetAllRuleGroupsUpdatedOrDeletedAfter(after)
-	if err != nil {
-		return rgs, err
+func (r *RuleGetterWrapper) RunUpdatesCollector() {
+	ch := make(chan RuleGroupsWithInfo, UpdateChannelBufferSize)
+	go r.ruleWatcher.Watch(ch)
+
+	for rg := range ch {
+		r.mtx.Lock()
+		r.newUpdates = append(r.newUpdates, rg)
+		r.mtx.Unlock()
 	}
-	if r.d != nil {
-		newRgs := map[string][]RuleGroupsWithInfo{}
-		for uid, rg := range rgs {
-			if assigned, err := r.d.IsAssigned(uid); err == nil && assigned {
-				newRgs[uid] = rg
-			}
-		}
-		return newRgs, nil
-	}
-	return rgs, err
 }

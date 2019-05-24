@@ -46,6 +46,9 @@ spec:
             - "--cluster.listen-address=0.0.0.0:9094"
             - "--cluster.headless-svc-name=ruler"
             - "--cluster.use-host-name=true"
+            - "--etcd.endpoints=etcd-0.etcd.demo.svc:2379"
+            - "--etcd.endpoints=etcd-1.etcd.demo.svc:2379"
+            - "--etcd.endpoints=etcd-2.etcd.demo.svc:2379"
           ports:
             - containerPort: 8443
               name: api
