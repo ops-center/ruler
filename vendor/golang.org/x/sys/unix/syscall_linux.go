@@ -730,6 +730,7 @@ func (sa *SockaddrVM) sockaddr() (unsafe.Pointer, _Socklen, error) {
 	return unsafe.Pointer(&sa.raw), SizeofSockaddrVM, nil
 }
 
+<<<<<<< HEAD
 type SockaddrXDP struct {
 	Flags        uint16
 	Ifindex      uint32
@@ -793,6 +794,8 @@ func (sa *SockaddrPPPoE) sockaddr() (unsafe.Pointer, _Socklen, error) {
 	return unsafe.Pointer(&sa.raw), SizeofSockaddrPPPoX, nil
 }
 
+=======
+>>>>>>> Add etcd storage
 func anyToSockaddr(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
 	switch rsa.Addr.Family {
 	case AF_NETLINK:
@@ -894,6 +897,7 @@ func anyToSockaddr(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
 			}
 			return sa, nil
 		}
+<<<<<<< HEAD
 	case AF_XDP:
 		pp := (*RawSockaddrXDP)(unsafe.Pointer(rsa))
 		sa := &SockaddrXDP{
@@ -919,6 +923,8 @@ func anyToSockaddr(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
 			}
 		}
 		return sa, nil
+=======
+>>>>>>> Add etcd storage
 	}
 	return nil, EAFNOSUPPORT
 }
@@ -975,6 +981,7 @@ func GetsockoptIPMreqn(fd, level, opt int) (*IPMreqn, error) {
 func GetsockoptUcred(fd, level, opt int) (*Ucred, error) {
 	var value Ucred
 	vallen := _Socklen(SizeofUcred)
+<<<<<<< HEAD
 	err := getsockopt(fd, level, opt, unsafe.Pointer(&value), &vallen)
 	return &value, err
 }
@@ -1007,6 +1014,8 @@ func GetsockoptString(fd, level, opt int) (string, error) {
 func GetsockoptTpacketStats(fd, level, opt int) (*TpacketStats, error) {
 	var value TpacketStats
 	vallen := _Socklen(SizeofTpacketStats)
+=======
+>>>>>>> Add etcd storage
 	err := getsockopt(fd, level, opt, unsafe.Pointer(&value), &vallen)
 	return &value, err
 }
@@ -1016,6 +1025,24 @@ func GetsockoptTpacketStatsV3(fd, level, opt int) (*TpacketStatsV3, error) {
 	vallen := _Socklen(SizeofTpacketStatsV3)
 	err := getsockopt(fd, level, opt, unsafe.Pointer(&value), &vallen)
 	return &value, err
+}
+
+// GetsockoptString returns the string value of the socket option opt for the
+// socket associated with fd at the given socket level.
+func GetsockoptString(fd, level, opt int) (string, error) {
+	buf := make([]byte, 256)
+	vallen := _Socklen(len(buf))
+	err := getsockopt(fd, level, opt, unsafe.Pointer(&buf[0]), &vallen)
+	if err != nil {
+		if err == ERANGE {
+			buf = make([]byte, vallen)
+			err = getsockopt(fd, level, opt, unsafe.Pointer(&buf[0]), &vallen)
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+	return string(buf[:vallen-1]), nil
 }
 
 func SetsockoptIPMreqn(fd, level, opt int, mreq *IPMreqn) (err error) {
@@ -1465,7 +1492,10 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 //sys	fcntl(fd int, cmd int, arg int) (val int, err error)
 //sys	Fdatasync(fd int) (err error)
 //sys	Fgetxattr(fd int, attr string, dest []byte) (sz int, err error)
+<<<<<<< HEAD
 //sys	FinitModule(fd int, params string, flags int) (err error)
+=======
+>>>>>>> Add etcd storage
 //sys	Flistxattr(fd int, dest []byte) (sz int, err error)
 //sys	Flock(fd int, how int) (err error)
 //sys	Fremovexattr(fd int, attr string) (err error)
@@ -1509,6 +1539,10 @@ func Getpgrp() (pid int) {
 //sys	Pselect(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timespec, sigmask *Sigset_t) (n int, err error) = SYS_PSELECT6
 //sys	read(fd int, p []byte) (n int, err error)
 //sys	Removexattr(path string, attr string) (err error)
+<<<<<<< HEAD
+=======
+//sys	Renameat(olddirfd int, oldpath string, newdirfd int, newpath string) (err error)
+>>>>>>> Add etcd storage
 //sys	Renameat2(olddirfd int, oldpath string, newdirfd int, newpath string, flags uint) (err error)
 //sys	RequestKey(keyType string, description string, callback string, destRingid int) (id int, err error)
 //sys	Setdomainname(p []byte) (err error)
@@ -1533,7 +1567,10 @@ func Setgid(uid int) (err error) {
 
 //sys	Setpriority(which int, who int, prio int) (err error)
 //sys	Setxattr(path string, attr string, data []byte, flags int) (err error)
+<<<<<<< HEAD
 //sys	Signalfd(fd int, mask *Sigset_t, flags int) = SYS_SIGNALFD4
+=======
+>>>>>>> Add etcd storage
 //sys	Statx(dirfd int, path string, flags int, mask int, stat *Statx_t) (err error)
 //sys	Sync()
 //sys	Syncfs(fd int) (err error)

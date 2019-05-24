@@ -362,6 +362,7 @@ func (u *unmarshalInfo) computeUnmarshalInfo() {
 	}
 
 	// Find any types associated with oneof fields.
+<<<<<<< HEAD
 	var oneofImplementers []interface{}
 	switch m := reflect.Zero(reflect.PtrTo(t)).Interface().(type) {
 	case oneofFuncsIface:
@@ -385,6 +386,42 @@ func (u *unmarshalInfo) computeUnmarshalInfo() {
 			if strings.HasPrefix(tag, "name=") {
 				name = strings.TrimPrefix(tag, "name=")
 				break
+=======
+	// TODO: XXX_OneofFuncs returns more info than we need.  Get rid of some of it?
+	fn := reflect.Zero(reflect.PtrTo(t)).MethodByName("XXX_OneofFuncs")
+	if fn.IsValid() {
+		res := fn.Call(nil)[3] // last return value from XXX_OneofFuncs: []interface{}
+		for i := res.Len() - 1; i >= 0; i-- {
+			v := res.Index(i)                             // interface{}
+			tptr := reflect.ValueOf(v.Interface()).Type() // *Msg_X
+			typ := tptr.Elem()                            // Msg_X
+
+			f := typ.Field(0) // oneof implementers have one field
+			baseUnmarshal := fieldUnmarshaler(&f)
+			tags := strings.Split(f.Tag.Get("protobuf"), ",")
+			fieldNum, err := strconv.Atoi(tags[1])
+			if err != nil {
+				panic("protobuf tag field not an integer: " + tags[1])
+			}
+			var name string
+			for _, tag := range tags {
+				if strings.HasPrefix(tag, "name=") {
+					name = strings.TrimPrefix(tag, "name=")
+					break
+				}
+			}
+
+			// Find the oneof field that this struct implements.
+			// Might take O(n^2) to process all of the oneofs, but who cares.
+			for _, of := range oneofFields {
+				if tptr.Implements(of.ityp) {
+					// We have found the corresponding interface for this struct.
+					// That lets us know where this struct should be stored
+					// when we encounter it during unmarshaling.
+					unmarshal := makeUnmarshalOneof(typ, of.ityp, baseUnmarshal)
+					u.setTag(fieldNum, of.field, unmarshal, 0, name)
+				}
+>>>>>>> Add etcd storage
 			}
 		}
 
@@ -1533,6 +1570,7 @@ func unmarshalUTF8StringValue(b []byte, f pointer, w int) ([]byte, error) {
 	}
 	v := string(b[:x])
 	*f.toString() = v
+<<<<<<< HEAD
 	if !utf8.ValidString(v) {
 		return b[x:], errInvalidUTF8
 	}
@@ -1571,6 +1609,46 @@ func unmarshalUTF8StringSlice(b []byte, f pointer, w int) ([]byte, error) {
 	if x > uint64(len(b)) {
 		return nil, io.ErrUnexpectedEOF
 	}
+=======
+	if !utf8.ValidString(v) {
+		return b[x:], errInvalidUTF8
+	}
+	return b[x:], nil
+}
+
+func unmarshalUTF8StringPtr(b []byte, f pointer, w int) ([]byte, error) {
+	if w != WireBytes {
+		return b, errInternalBadWireType
+	}
+	x, n := decodeVarint(b)
+	if n == 0 {
+		return nil, io.ErrUnexpectedEOF
+	}
+	b = b[n:]
+	if x > uint64(len(b)) {
+		return nil, io.ErrUnexpectedEOF
+	}
+	v := string(b[:x])
+	*f.toStringPtr() = &v
+	if !utf8.ValidString(v) {
+		return b[x:], errInvalidUTF8
+	}
+	return b[x:], nil
+}
+
+func unmarshalUTF8StringSlice(b []byte, f pointer, w int) ([]byte, error) {
+	if w != WireBytes {
+		return b, errInternalBadWireType
+	}
+	x, n := decodeVarint(b)
+	if n == 0 {
+		return nil, io.ErrUnexpectedEOF
+	}
+	b = b[n:]
+	if x > uint64(len(b)) {
+		return nil, io.ErrUnexpectedEOF
+	}
+>>>>>>> Add etcd storage
 	v := string(b[:x])
 	s := f.toStringSlice()
 	*s = append(*s, v)

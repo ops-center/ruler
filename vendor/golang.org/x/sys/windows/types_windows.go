@@ -7,6 +7,36 @@ package windows
 import "syscall"
 
 const (
+<<<<<<< HEAD
+=======
+	// Windows errors.
+	ERROR_FILE_NOT_FOUND         syscall.Errno = 2
+	ERROR_PATH_NOT_FOUND         syscall.Errno = 3
+	ERROR_ACCESS_DENIED          syscall.Errno = 5
+	ERROR_NO_MORE_FILES          syscall.Errno = 18
+	ERROR_HANDLE_EOF             syscall.Errno = 38
+	ERROR_NETNAME_DELETED        syscall.Errno = 64
+	ERROR_FILE_EXISTS            syscall.Errno = 80
+	ERROR_BROKEN_PIPE            syscall.Errno = 109
+	ERROR_BUFFER_OVERFLOW        syscall.Errno = 111
+	ERROR_INSUFFICIENT_BUFFER    syscall.Errno = 122
+	ERROR_MOD_NOT_FOUND          syscall.Errno = 126
+	ERROR_PROC_NOT_FOUND         syscall.Errno = 127
+	ERROR_ALREADY_EXISTS         syscall.Errno = 183
+	ERROR_ENVVAR_NOT_FOUND       syscall.Errno = 203
+	ERROR_MORE_DATA              syscall.Errno = 234
+	ERROR_OPERATION_ABORTED      syscall.Errno = 995
+	ERROR_IO_PENDING             syscall.Errno = 997
+	ERROR_SERVICE_SPECIFIC_ERROR syscall.Errno = 1066
+	ERROR_NOT_FOUND              syscall.Errno = 1168
+	ERROR_PRIVILEGE_NOT_HELD     syscall.Errno = 1314
+	WSAEACCES                    syscall.Errno = 10013
+	WSAEMSGSIZE                  syscall.Errno = 10040
+	WSAECONNRESET                syscall.Errno = 10054
+)
+
+const (
+>>>>>>> Add etcd storage
 	// Invented values to support what package os expects.
 	O_RDONLY   = 0x00000
 	O_WRONLY   = 0x00001
@@ -384,6 +414,15 @@ const (
 	CERT_CHAIN_POLICY_EV                = 8
 	CERT_CHAIN_POLICY_SSL_F12           = 9
 
+<<<<<<< HEAD
+=======
+	CERT_E_EXPIRED       = 0x800B0101
+	CERT_E_ROLE          = 0x800B0103
+	CERT_E_PURPOSE       = 0x800B0106
+	CERT_E_UNTRUSTEDROOT = 0x800B0109
+	CERT_E_CN_NO_MATCH   = 0x800B010F
+
+>>>>>>> Add etcd storage
 	/* AuthType values for SSLExtraCertChainPolicyPara struct */
 	AUTHTYPE_CLIENT = 1
 	AUTHTYPE_SERVER = 2

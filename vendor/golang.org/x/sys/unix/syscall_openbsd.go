@@ -43,6 +43,7 @@ func nametomib(name string) (mib []_C_int, err error) {
 	return nil, EINVAL
 }
 
+<<<<<<< HEAD
 func SysctlClockinfo(name string) (*Clockinfo, error) {
 	mib, err := sysctlmib(name)
 	if err != nil {
@@ -77,6 +78,8 @@ func SysctlUvmexp(name string) (*Uvmexp, error) {
 	return &u, nil
 }
 
+=======
+>>>>>>> Add etcd storage
 //sysnb pipe(p *[2]_C_int) (err error)
 func Pipe(p []int) (err error) {
 	if len(p) != 2 {
@@ -111,6 +114,7 @@ func Getwd() (string, error) {
 	return string(buf[:n]), nil
 }
 
+<<<<<<< HEAD
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
@@ -118,6 +122,8 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 	return sendfile(outfd, infd, offset, count)
 }
 
+=======
+>>>>>>> Add etcd storage
 // TODO
 func sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	return -1, ENOSYS
@@ -182,6 +188,7 @@ func IoctlGetTermios(fd int, req uint) (*Termios, error) {
 	return &value, err
 }
 
+<<<<<<< HEAD
 //sys	ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error)
 
 func Ppoll(fds []PollFd, timeout *Timespec, sigmask *Sigset_t) (n int, err error) {
@@ -191,6 +198,8 @@ func Ppoll(fds []PollFd, timeout *Timespec, sigmask *Sigset_t) (n int, err error
 	return ppoll(&fds[0], len(fds), timeout, sigmask)
 }
 
+=======
+>>>>>>> Add etcd storage
 func Uname(uname *Utsname) error {
 	mib := []_C_int{CTL_KERN, KERN_OSTYPE}
 	n := unsafe.Sizeof(uname.Sysname)

@@ -234,6 +234,7 @@ func Uname(uname *Utsname) error {
 	return nil
 }
 
+<<<<<<< HEAD
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
@@ -241,6 +242,8 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 	return sendfile(outfd, infd, offset, count)
 }
 
+=======
+>>>>>>> Add etcd storage
 /*
  * Exposed directly
  */

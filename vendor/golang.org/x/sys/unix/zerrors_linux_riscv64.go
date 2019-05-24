@@ -41,7 +41,11 @@ const (
 	AF_KEY                               = 0xf
 	AF_LLC                               = 0x1a
 	AF_LOCAL                             = 0x1
+<<<<<<< HEAD
 	AF_MAX                               = 0x2d
+=======
+	AF_MAX                               = 0x2c
+>>>>>>> Add etcd storage
 	AF_MPLS                              = 0x1c
 	AF_NETBEUI                           = 0xd
 	AF_NETLINK                           = 0x10
@@ -64,7 +68,10 @@ const (
 	AF_VSOCK                             = 0x28
 	AF_WANPIPE                           = 0x19
 	AF_X25                               = 0x9
+<<<<<<< HEAD
 	AF_XDP                               = 0x2c
+=======
+>>>>>>> Add etcd storage
 	ALG_OP_DECRYPT                       = 0x0
 	ALG_OP_ENCRYPT                       = 0x1
 	ALG_SET_AEAD_ASSOCLEN                = 0x4
@@ -174,7 +181,10 @@ const (
 	B9600                                = 0xd
 	BALLOON_KVM_MAGIC                    = 0x13661366
 	BDEVFS_MAGIC                         = 0x62646576
+<<<<<<< HEAD
 	BINDERFS_SUPER_MAGIC                 = 0x6c6f6f70
+=======
+>>>>>>> Add etcd storage
 	BINFMTFS_MAGIC                       = 0x42494e4d
 	BLKBSZGET                            = 0x80081270
 	BLKBSZSET                            = 0x40081271
@@ -487,6 +497,7 @@ const (
 	FALLOC_FL_PUNCH_HOLE                 = 0x2
 	FALLOC_FL_UNSHARE_RANGE              = 0x40
 	FALLOC_FL_ZERO_RANGE                 = 0x10
+<<<<<<< HEAD
 	FANOTIFY_METADATA_VERSION            = 0x3
 	FAN_ACCESS                           = 0x1
 	FAN_ACCESS_PERM                      = 0x20000
@@ -531,13 +542,18 @@ const (
 	FAN_REPORT_TID                       = 0x100
 	FAN_UNLIMITED_MARKS                  = 0x20
 	FAN_UNLIMITED_QUEUE                  = 0x10
+=======
+>>>>>>> Add etcd storage
 	FD_CLOEXEC                           = 0x1
 	FD_SETSIZE                           = 0x400
 	FF0                                  = 0x0
 	FF1                                  = 0x8000
 	FFDLY                                = 0x8000
 	FLUSHO                               = 0x1000
+<<<<<<< HEAD
 	FS_ENCRYPTION_MODE_ADIANTUM          = 0x9
+=======
+>>>>>>> Add etcd storage
 	FS_ENCRYPTION_MODE_AES_128_CBC       = 0x5
 	FS_ENCRYPTION_MODE_AES_128_CTS       = 0x6
 	FS_ENCRYPTION_MODE_AES_256_CBC       = 0x3
@@ -559,7 +575,11 @@ const (
 	FS_POLICY_FLAGS_PAD_4                = 0x0
 	FS_POLICY_FLAGS_PAD_8                = 0x1
 	FS_POLICY_FLAGS_PAD_MASK             = 0x3
+<<<<<<< HEAD
 	FS_POLICY_FLAGS_VALID                = 0x7
+=======
+	FS_POLICY_FLAGS_VALID                = 0x3
+>>>>>>> Add etcd storage
 	FUTEXFS_SUPER_MAGIC                  = 0xbad1dea
 	F_ADD_SEALS                          = 0x409
 	F_DUPFD                              = 0x0
@@ -684,7 +704,11 @@ const (
 	IFA_F_STABLE_PRIVACY                 = 0x800
 	IFA_F_TEMPORARY                      = 0x1
 	IFA_F_TENTATIVE                      = 0x40
+<<<<<<< HEAD
 	IFA_MAX                              = 0xa
+=======
+	IFA_MAX                              = 0x9
+>>>>>>> Add etcd storage
 	IFF_ALLMULTI                         = 0x200
 	IFF_ATTACH_QUEUE                     = 0x200
 	IFF_AUTOMEDIA                        = 0x4000
@@ -752,7 +776,10 @@ const (
 	IN_ISDIR                             = 0x40000000
 	IN_LOOPBACKNET                       = 0x7f
 	IN_MASK_ADD                          = 0x20000000
+<<<<<<< HEAD
 	IN_MASK_CREATE                       = 0x10000000
+=======
+>>>>>>> Add etcd storage
 	IN_MODIFY                            = 0x2
 	IN_MOVE                              = 0xc0
 	IN_MOVED_FROM                        = 0x40
@@ -824,7 +851,10 @@ const (
 	IPV6_MINHOPCOUNT                     = 0x49
 	IPV6_MTU                             = 0x18
 	IPV6_MTU_DISCOVER                    = 0x17
+<<<<<<< HEAD
 	IPV6_MULTICAST_ALL                   = 0x1d
+=======
+>>>>>>> Add etcd storage
 	IPV6_MULTICAST_HOPS                  = 0x12
 	IPV6_MULTICAST_IF                    = 0x11
 	IPV6_MULTICAST_LOOP                  = 0x13
@@ -926,6 +956,7 @@ const (
 	IXOFF                                = 0x1000
 	IXON                                 = 0x400
 	JFFS2_SUPER_MAGIC                    = 0x72b6
+<<<<<<< HEAD
 	KEXEC_ARCH_386                       = 0x30000
 	KEXEC_ARCH_68K                       = 0x40000
 	KEXEC_ARCH_AARCH64                   = 0xb70000
@@ -946,6 +977,8 @@ const (
 	KEXEC_ON_CRASH                       = 0x1
 	KEXEC_PRESERVE_CONTEXT               = 0x2
 	KEXEC_SEGMENT_MAX                    = 0x10
+=======
+>>>>>>> Add etcd storage
 	KEYCTL_ASSUME_AUTHORITY              = 0x10
 	KEYCTL_CHOWN                         = 0x4
 	KEYCTL_CLEAR                         = 0x7
@@ -960,11 +993,14 @@ const (
 	KEYCTL_JOIN_SESSION_KEYRING          = 0x1
 	KEYCTL_LINK                          = 0x8
 	KEYCTL_NEGATE                        = 0xd
+<<<<<<< HEAD
 	KEYCTL_PKEY_DECRYPT                  = 0x1a
 	KEYCTL_PKEY_ENCRYPT                  = 0x19
 	KEYCTL_PKEY_QUERY                    = 0x18
 	KEYCTL_PKEY_SIGN                     = 0x1b
 	KEYCTL_PKEY_VERIFY                   = 0x1c
+=======
+>>>>>>> Add etcd storage
 	KEYCTL_READ                          = 0xb
 	KEYCTL_REJECT                        = 0x13
 	KEYCTL_RESTRICT_KEYRING              = 0x1d
@@ -974,10 +1010,13 @@ const (
 	KEYCTL_SETPERM                       = 0x5
 	KEYCTL_SET_REQKEY_KEYRING            = 0xe
 	KEYCTL_SET_TIMEOUT                   = 0xf
+<<<<<<< HEAD
 	KEYCTL_SUPPORTS_DECRYPT              = 0x2
 	KEYCTL_SUPPORTS_ENCRYPT              = 0x1
 	KEYCTL_SUPPORTS_SIGN                 = 0x4
 	KEYCTL_SUPPORTS_VERIFY               = 0x8
+=======
+>>>>>>> Add etcd storage
 	KEYCTL_UNLINK                        = 0x9
 	KEYCTL_UPDATE                        = 0x2
 	KEY_REQKEY_DEFL_DEFAULT              = 0x0
@@ -1053,6 +1092,7 @@ const (
 	MCL_CURRENT                          = 0x1
 	MCL_FUTURE                           = 0x2
 	MCL_ONFAULT                          = 0x4
+<<<<<<< HEAD
 	MFD_ALLOW_SEALING                    = 0x2
 	MFD_CLOEXEC                          = 0x1
 	MFD_HUGETLB                          = 0x4
@@ -1070,6 +1110,8 @@ const (
 	MFD_HUGE_8MB                         = 0x5c000000
 	MFD_HUGE_MASK                        = 0x3f
 	MFD_HUGE_SHIFT                       = 0x1a
+=======
+>>>>>>> Add etcd storage
 	MINIX2_SUPER_MAGIC                   = 0x2468
 	MINIX2_SUPER_MAGIC2                  = 0x2478
 	MINIX3_SUPER_MAGIC                   = 0x4d5a
@@ -1078,8 +1120,11 @@ const (
 	MNT_DETACH                           = 0x2
 	MNT_EXPIRE                           = 0x4
 	MNT_FORCE                            = 0x1
+<<<<<<< HEAD
 	MODULE_INIT_IGNORE_MODVERSIONS       = 0x1
 	MODULE_INIT_IGNORE_VERMAGIC          = 0x2
+=======
+>>>>>>> Add etcd storage
 	MSDOS_SUPER_MAGIC                    = 0x4d44
 	MSG_BATCH                            = 0x40000
 	MSG_CMSG_CLOEXEC                     = 0x40000000
@@ -1156,7 +1201,10 @@ const (
 	NETLINK_FIB_LOOKUP                   = 0xa
 	NETLINK_FIREWALL                     = 0x3
 	NETLINK_GENERIC                      = 0x10
+<<<<<<< HEAD
 	NETLINK_GET_STRICT_CHK               = 0xc
+=======
+>>>>>>> Add etcd storage
 	NETLINK_INET_DIAG                    = 0x4
 	NETLINK_IP6_FW                       = 0xd
 	NETLINK_ISCSI                        = 0x8
@@ -1178,7 +1226,11 @@ const (
 	NETLINK_UNUSED                       = 0x1
 	NETLINK_USERSOCK                     = 0x2
 	NETLINK_XFRM                         = 0x6
+<<<<<<< HEAD
 	NETNSA_MAX                           = 0x5
+=======
+	NETNSA_MAX                           = 0x3
+>>>>>>> Add etcd storage
 	NETNSA_NSID_NOT_ASSIGNED             = -0x1
 	NFNETLINK_V0                         = 0x0
 	NFNLGRP_ACCT_QUOTA                   = 0x8
@@ -1300,7 +1352,10 @@ const (
 	PACKET_FASTROUTE                     = 0x6
 	PACKET_HDRLEN                        = 0xb
 	PACKET_HOST                          = 0x0
+<<<<<<< HEAD
 	PACKET_IGNORE_OUTGOING               = 0x17
+=======
+>>>>>>> Add etcd storage
 	PACKET_KERNEL                        = 0x7
 	PACKET_LOOPBACK                      = 0x5
 	PACKET_LOSS                          = 0xe
@@ -1350,6 +1405,7 @@ const (
 	PERF_EVENT_IOC_SET_FILTER            = 0x40082406
 	PERF_EVENT_IOC_SET_OUTPUT            = 0x2405
 	PIPEFS_MAGIC                         = 0x50495045
+<<<<<<< HEAD
 	PPPIOCATTACH                         = 0x4004743d
 	PPPIOCATTCHAN                        = 0x40047438
 	PPPIOCCONNECT                        = 0x4004743a
@@ -1380,6 +1436,8 @@ const (
 	PPPIOCSRASYNCMAP                     = 0x40047454
 	PPPIOCSXASYNCMAP                     = 0x4020744f
 	PPPIOCXFERUNIT                       = 0x744e
+=======
+>>>>>>> Add etcd storage
 	PRIO_PGRP                            = 0x1
 	PRIO_PROCESS                         = 0x0
 	PRIO_USER                            = 0x2
@@ -1442,12 +1500,15 @@ const (
 	PR_MCE_KILL_SET                      = 0x1
 	PR_MPX_DISABLE_MANAGEMENT            = 0x2c
 	PR_MPX_ENABLE_MANAGEMENT             = 0x2b
+<<<<<<< HEAD
 	PR_PAC_APDAKEY                       = 0x4
 	PR_PAC_APDBKEY                       = 0x8
 	PR_PAC_APGAKEY                       = 0x10
 	PR_PAC_APIAKEY                       = 0x1
 	PR_PAC_APIBKEY                       = 0x2
 	PR_PAC_RESET_KEYS                    = 0x36
+=======
+>>>>>>> Add etcd storage
 	PR_SET_CHILD_SUBREAPER               = 0x24
 	PR_SET_DUMPABLE                      = 0x4
 	PR_SET_ENDIAN                        = 0x14
@@ -1487,7 +1548,10 @@ const (
 	PR_SPEC_DISABLE                      = 0x4
 	PR_SPEC_ENABLE                       = 0x2
 	PR_SPEC_FORCE_DISABLE                = 0x8
+<<<<<<< HEAD
 	PR_SPEC_INDIRECT_BRANCH              = 0x1
+=======
+>>>>>>> Add etcd storage
 	PR_SPEC_NOT_AFFECTED                 = 0x0
 	PR_SPEC_PRCTL                        = 0x1
 	PR_SPEC_STORE_BYPASS                 = 0x0
@@ -1579,6 +1643,7 @@ const (
 	RLIMIT_SIGPENDING                    = 0xb
 	RLIMIT_STACK                         = 0x3
 	RLIM_INFINITY                        = 0xffffffffffffffff
+<<<<<<< HEAD
 	RNDADDENTROPY                        = 0x40085203
 	RNDADDTOENTCNT                       = 0x40045201
 	RNDCLEARPOOL                         = 0x5206
@@ -1586,6 +1651,8 @@ const (
 	RNDGETPOOL                           = 0x80085202
 	RNDRESEEDCRNG                        = 0x5207
 	RNDZAPENTCNT                         = 0x5204
+=======
+>>>>>>> Add etcd storage
 	RTAX_ADVMSS                          = 0x8
 	RTAX_CC_ALGO                         = 0x10
 	RTAX_CWND                            = 0x7
@@ -1679,7 +1746,10 @@ const (
 	RTM_DELACTION                        = 0x31
 	RTM_DELADDR                          = 0x15
 	RTM_DELADDRLABEL                     = 0x49
+<<<<<<< HEAD
 	RTM_DELCHAIN                         = 0x65
+=======
+>>>>>>> Add etcd storage
 	RTM_DELLINK                          = 0x11
 	RTM_DELMDB                           = 0x55
 	RTM_DELNEIGH                         = 0x1d
@@ -1700,7 +1770,10 @@ const (
 	RTM_GETADDR                          = 0x16
 	RTM_GETADDRLABEL                     = 0x4a
 	RTM_GETANYCAST                       = 0x3e
+<<<<<<< HEAD
 	RTM_GETCHAIN                         = 0x66
+=======
+>>>>>>> Add etcd storage
 	RTM_GETDCB                           = 0x4e
 	RTM_GETLINK                          = 0x12
 	RTM_GETMDB                           = 0x56
@@ -1715,12 +1788,19 @@ const (
 	RTM_GETSTATS                         = 0x5e
 	RTM_GETTCLASS                        = 0x2a
 	RTM_GETTFILTER                       = 0x2e
+<<<<<<< HEAD
 	RTM_MAX                              = 0x67
+=======
+	RTM_MAX                              = 0x63
+>>>>>>> Add etcd storage
 	RTM_NEWACTION                        = 0x30
 	RTM_NEWADDR                          = 0x14
 	RTM_NEWADDRLABEL                     = 0x48
 	RTM_NEWCACHEREPORT                   = 0x60
+<<<<<<< HEAD
 	RTM_NEWCHAIN                         = 0x64
+=======
+>>>>>>> Add etcd storage
 	RTM_NEWLINK                          = 0x10
 	RTM_NEWMDB                           = 0x54
 	RTM_NEWNDUSEROPT                     = 0x44
@@ -1735,8 +1815,13 @@ const (
 	RTM_NEWSTATS                         = 0x5c
 	RTM_NEWTCLASS                        = 0x28
 	RTM_NEWTFILTER                       = 0x2c
+<<<<<<< HEAD
 	RTM_NR_FAMILIES                      = 0x16
 	RTM_NR_MSGTYPES                      = 0x58
+=======
+	RTM_NR_FAMILIES                      = 0x15
+	RTM_NR_MSGTYPES                      = 0x54
+>>>>>>> Add etcd storage
 	RTM_SETDCB                           = 0x4f
 	RTM_SETLINK                          = 0x13
 	RTM_SETNEIGHTBL                      = 0x43
@@ -1785,16 +1870,23 @@ const (
 	SCM_TIMESTAMPING_OPT_STATS           = 0x36
 	SCM_TIMESTAMPING_PKTINFO             = 0x3a
 	SCM_TIMESTAMPNS                      = 0x23
+<<<<<<< HEAD
 	SCM_TXTIME                           = 0x3d
 	SCM_WIFI_STATUS                      = 0x29
 	SC_LOG_FLUSH                         = 0x100000
+=======
+	SCM_WIFI_STATUS                      = 0x29
+>>>>>>> Add etcd storage
 	SECCOMP_MODE_DISABLED                = 0x0
 	SECCOMP_MODE_FILTER                  = 0x2
 	SECCOMP_MODE_STRICT                  = 0x1
 	SECURITYFS_MAGIC                     = 0x73636673
 	SELINUX_MAGIC                        = 0xf97cff8c
+<<<<<<< HEAD
 	SFD_CLOEXEC                          = 0x80000
 	SFD_NONBLOCK                         = 0x800
+=======
+>>>>>>> Add etcd storage
 	SHUT_RD                              = 0x0
 	SHUT_RDWR                            = 0x2
 	SHUT_WR                              = 0x1
@@ -1845,9 +1937,12 @@ const (
 	SIOCGMIIPHY                          = 0x8947
 	SIOCGMIIREG                          = 0x8948
 	SIOCGPGRP                            = 0x8904
+<<<<<<< HEAD
 	SIOCGPPPCSTATS                       = 0x89f2
 	SIOCGPPPSTATS                        = 0x89f0
 	SIOCGPPPVER                          = 0x89f1
+=======
+>>>>>>> Add etcd storage
 	SIOCGRARP                            = 0x8961
 	SIOCGSKNS                            = 0x894c
 	SIOCGSTAMP                           = 0x8906
@@ -1937,7 +2032,10 @@ const (
 	SOL_TIPC                             = 0x10f
 	SOL_TLS                              = 0x11a
 	SOL_X25                              = 0x106
+<<<<<<< HEAD
 	SOL_XDP                              = 0x11b
+=======
+>>>>>>> Add etcd storage
 	SOMAXCONN                            = 0x80
 	SO_ACCEPTCONN                        = 0x1e
 	SO_ATTACH_BPF                        = 0x32
@@ -1956,6 +2054,7 @@ const (
 	SO_DETACH_FILTER                     = 0x1b
 	SO_DOMAIN                            = 0x27
 	SO_DONTROUTE                         = 0x5
+<<<<<<< HEAD
 	SO_EE_CODE_TXTIME_INVALID_PARAM      = 0x1
 	SO_EE_CODE_TXTIME_MISSED             = 0x2
 	SO_EE_CODE_ZEROCOPY_COPIED           = 0x1
@@ -1967,6 +2066,8 @@ const (
 	SO_EE_ORIGIN_TXSTATUS                = 0x4
 	SO_EE_ORIGIN_TXTIME                  = 0x6
 	SO_EE_ORIGIN_ZEROCOPY                = 0x5
+=======
+>>>>>>> Add etcd storage
 	SO_ERROR                             = 0x4
 	SO_GET_FILTER                        = 0x1a
 	SO_INCOMING_CPU                      = 0x31
@@ -2007,7 +2108,10 @@ const (
 	SO_TIMESTAMP                         = 0x1d
 	SO_TIMESTAMPING                      = 0x25
 	SO_TIMESTAMPNS                       = 0x23
+<<<<<<< HEAD
 	SO_TXTIME                            = 0x3d
+=======
+>>>>>>> Add etcd storage
 	SO_TYPE                              = 0x3
 	SO_VM_SOCKETS_BUFFER_MAX_SIZE        = 0x2
 	SO_VM_SOCKETS_BUFFER_MIN_SIZE        = 0x1
@@ -2086,7 +2190,11 @@ const (
 	TASKSTATS_GENL_NAME                  = "TASKSTATS"
 	TASKSTATS_GENL_VERSION               = 0x1
 	TASKSTATS_TYPE_MAX                   = 0x6
+<<<<<<< HEAD
 	TASKSTATS_VERSION                    = 0x9
+=======
+	TASKSTATS_VERSION                    = 0x8
+>>>>>>> Add etcd storage
 	TCFLSH                               = 0x540b
 	TCGETA                               = 0x5405
 	TCGETS                               = 0x5401
@@ -2100,7 +2208,10 @@ const (
 	TCOOFF                               = 0x0
 	TCOON                                = 0x1
 	TCP_CC_INFO                          = 0x1a
+<<<<<<< HEAD
 	TCP_CM_INQ                           = 0x24
+=======
+>>>>>>> Add etcd storage
 	TCP_CONGESTION                       = 0xd
 	TCP_COOKIE_IN_ALWAYS                 = 0x1
 	TCP_COOKIE_MAX                       = 0x10
@@ -2115,7 +2226,10 @@ const (
 	TCP_FASTOPEN_KEY                     = 0x21
 	TCP_FASTOPEN_NO_COOKIE               = 0x22
 	TCP_INFO                             = 0xb
+<<<<<<< HEAD
 	TCP_INQ                              = 0x24
+=======
+>>>>>>> Add etcd storage
 	TCP_KEEPCNT                          = 0x6
 	TCP_KEEPIDLE                         = 0x4
 	TCP_KEEPINTVL                        = 0x5
@@ -2135,9 +2249,12 @@ const (
 	TCP_QUEUE_SEQ                        = 0x15
 	TCP_QUICKACK                         = 0xc
 	TCP_REPAIR                           = 0x13
+<<<<<<< HEAD
 	TCP_REPAIR_OFF                       = 0x0
 	TCP_REPAIR_OFF_NO_WP                 = -0x1
 	TCP_REPAIR_ON                        = 0x1
+=======
+>>>>>>> Add etcd storage
 	TCP_REPAIR_OPTIONS                   = 0x16
 	TCP_REPAIR_QUEUE                     = 0x14
 	TCP_REPAIR_WINDOW                    = 0x1d
@@ -2152,7 +2269,10 @@ const (
 	TCP_ULP                              = 0x1f
 	TCP_USER_TIMEOUT                     = 0x12
 	TCP_WINDOW_CLAMP                     = 0xa
+<<<<<<< HEAD
 	TCP_ZEROCOPY_RECEIVE                 = 0x23
+=======
+>>>>>>> Add etcd storage
 	TCSAFLUSH                            = 0x2
 	TCSBRK                               = 0x5409
 	TCSBRKP                              = 0x5425
@@ -2169,7 +2289,10 @@ const (
 	TCSETXF                              = 0x5434
 	TCSETXW                              = 0x5435
 	TCXONC                               = 0x540a
+<<<<<<< HEAD
 	TIMER_ABSTIME                        = 0x1
+=======
+>>>>>>> Add etcd storage
 	TIOCCBRK                             = 0x5428
 	TIOCCONS                             = 0x541d
 	TIOCEXCL                             = 0x540c
@@ -2177,7 +2300,10 @@ const (
 	TIOCGETD                             = 0x5424
 	TIOCGEXCL                            = 0x80045440
 	TIOCGICOUNT                          = 0x545d
+<<<<<<< HEAD
 	TIOCGISO7816                         = 0x80285442
+=======
+>>>>>>> Add etcd storage
 	TIOCGLCKTRMIOS                       = 0x5456
 	TIOCGPGRP                            = 0x540f
 	TIOCGPKT                             = 0x80045438
@@ -2231,7 +2357,10 @@ const (
 	TIOCSER_TEMT                         = 0x1
 	TIOCSETD                             = 0x5423
 	TIOCSIG                              = 0x40045436
+<<<<<<< HEAD
 	TIOCSISO7816                         = 0xc0285443
+=======
+>>>>>>> Add etcd storage
 	TIOCSLCKTRMIOS                       = 0x5457
 	TIOCSPGRP                            = 0x5410
 	TIOCSPTLCK                           = 0x40045431
@@ -2272,7 +2401,10 @@ const (
 	TUNGETVNETBE                         = 0x800454df
 	TUNGETVNETHDRSZ                      = 0x800454d7
 	TUNGETVNETLE                         = 0x800454dd
+<<<<<<< HEAD
 	TUNSETCARRIER                        = 0x400454e2
+=======
+>>>>>>> Add etcd storage
 	TUNSETDEBUG                          = 0x400454c9
 	TUNSETFILTEREBPF                     = 0x800454e1
 	TUNSETGROUP                          = 0x400454ce
@@ -2441,6 +2573,7 @@ const (
 	XATTR_CREATE                         = 0x1
 	XATTR_REPLACE                        = 0x2
 	XCASE                                = 0x4
+<<<<<<< HEAD
 	XDP_COPY                             = 0x2
 	XDP_FLAGS_DRV_MODE                   = 0x4
 	XDP_FLAGS_HW_MODE                    = 0x8
@@ -2463,6 +2596,9 @@ const (
 	XDP_ZEROCOPY                         = 0x4
 	XENFS_SUPER_MAGIC                    = 0xabba1974
 	XFS_SUPER_MAGIC                      = 0x58465342
+=======
+	XENFS_SUPER_MAGIC                    = 0xabba1974
+>>>>>>> Add etcd storage
 	XTABS                                = 0x1800
 	ZSMALLOC_MAGIC                       = 0x58295829
 )

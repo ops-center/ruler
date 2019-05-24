@@ -60,10 +60,13 @@ var (
 	// it is an IPv6 address (host only) and "[::]:" is invalid as it ends with
 	// a colon as the host and port separator
 	errEndsWithColon = errors.New("dns resolver: missing port after port-separator colon")
+<<<<<<< HEAD
 )
 
 var (
 	defaultResolver netResolver = net.DefaultResolver
+=======
+>>>>>>> Add etcd storage
 )
 
 var customAuthorityDialler = func(authority string) func(ctx context.Context, network, address string) (net.Conn, error) {
@@ -199,7 +202,10 @@ type dnsResolver struct {
 	retryCount int
 	host       string
 	port       string
+<<<<<<< HEAD
 	resolver   netResolver
+=======
+>>>>>>> Add etcd storage
 	ctx        context.Context
 	cancel     context.CancelFunc
 	cc         resolver.ClientConn
@@ -349,11 +355,19 @@ func formatIP(addr string) (addrIP string, ok bool) {
 // If target is in IPv6 format and host-name is enclosed in square brackets, brackets
 // are stripped when setting the host.
 // examples:
+<<<<<<< HEAD
 // target: "www.google.com" defaultPort: "443" returns host: "www.google.com", port: "443"
 // target: "ipv4-host:80" defaultPort: "443" returns host: "ipv4-host", port: "80"
 // target: "[ipv6-host]" defaultPort: "443" returns host: "ipv6-host", port: "443"
 // target: ":80" defaultPort: "443" returns host: "localhost", port: "80"
 func parseTarget(target, defaultPort string) (host, port string, err error) {
+=======
+// target: "www.google.com" returns host: "www.google.com", port: "443"
+// target: "ipv4-host:80" returns host: "ipv4-host", port: "80"
+// target: "[ipv6-host]" returns host: "ipv6-host", port: "443"
+// target: ":80" returns host: "localhost", port: "80"
+func parseTarget(target string) (host, port string, err error) {
+>>>>>>> Add etcd storage
 	if target == "" {
 		return "", "", errMissingAddr
 	}

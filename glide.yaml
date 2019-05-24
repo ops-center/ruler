@@ -1,0 +1,85 @@
+package: github.com/searchlight/ruler
+import:
+- package: github.com/cortexproject/cortex
+  subpackages:
+  - pkg/configs
+  - pkg/configs/client
+  - pkg/configs/db
+  - pkg/distributor
+  - pkg/ingester/client
+  - pkg/util
+  - pkg/util/flagext
+- package: github.com/go-kit/kit
+  subpackages:
+  - log
+  - log/level
+- package: github.com/gorilla/mux
+- package: github.com/jonboulle/clockwork
+- package: github.com/opentracing/opentracing-go
+- package: github.com/prometheus/client_golang
+  version: v0.9.1
+  subpackages:
+    - prometheus
+- package: github.com/prometheus/common
+  subpackages:
+  - config
+  - model
+  version: v0.2.0
+- package: github.com/prometheus/prometheus
+  version: v2.8.1
+  subpackages:
+  - config
+  - discovery
+  - discovery/config
+  - discovery/dns
+  - discovery/targetgroup
+  - notifier
+  - pkg/labels
+  - promql
+  - rules
+  - storage
+  - util/strutil
+- package: github.com/weaveworks/common
+  subpackages:
+  - instrument
+  - user
+- package: golang.org/x/net
+  subpackages:
+  - context
+  - context/ctxhttp
+- package: github.com/mattes/migrate
+  version: v1.3.1
+- package: github.com/gogo/protobuf
+  version: v1.2.0
+  subpackages:
+    - proto
+- package: github.com/gophercloud/gophercloud
+  version: bd754a35
+- package: github.com/searchlight/prom-query-handler
+  version: master
+- package: github.com/hashicorp/memberlist
+  version: v0.1.4
+- package: stathat.com/c/consistent
+  vcs: github
+  version: v1.0.0
+- package: go.etcd.io/etcd/clientv3
+  version: v3.3.13
+  subpackages:
+    - clientv3
+- package: google.golang.org/grpc
+  version: v1.14.0
+- package: gopkg.in/yaml.v2
+  version: v2.2.1
+- package: github.com/golang/protobuf
+  version: v1.2.0
+- package: golang.org/x/crypto
+  version: 8ac0e0d97ce4
+- package: golang.org/x/sys
+  version: d0be0721c37e
+- package: github.com/grpc-ecosystem/grpc-gateway
+  version: v1.6.3
+testImport:
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert
+  - require

@@ -149,6 +149,7 @@ type _Gid_t C.gid_t
 
 // Files
 
+<<<<<<< HEAD
 const (
 	_statfsVersion = C.STATFS_VERSION
 	_dirblksiz     = C.DIRBLKSIZ
@@ -157,6 +158,9 @@ const (
 type Stat_t C.struct_stat
 
 type stat_freebsd11_t C.struct_freebsd11_stat
+=======
+type Stat_t C.struct_stat8
+>>>>>>> Add etcd storage
 
 type Statfs_t C.struct_statfs
 

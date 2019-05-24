@@ -248,8 +248,11 @@ type Termios C.struct_termios
 
 type Winsize C.struct_winsize
 
+<<<<<<< HEAD
 type Ptmget C.struct_ptmget
 
+=======
+>>>>>>> Add etcd storage
 // fchmodat-like syscalls.
 
 const (
@@ -281,9 +284,12 @@ type Sysctlnode C.struct_sysctlnode
 // Uname
 
 type Utsname C.struct_utsname
+<<<<<<< HEAD
 
 // Clockinfo
 
 const SizeofClockinfo = C.sizeof_struct_clockinfo
 
 type Clockinfo C.struct_clockinfo
+=======
+>>>>>>> Add etcd storage

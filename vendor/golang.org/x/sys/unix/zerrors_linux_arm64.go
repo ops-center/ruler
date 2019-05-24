@@ -174,7 +174,10 @@ const (
 	B9600                                = 0xd
 	BALLOON_KVM_MAGIC                    = 0x13661366
 	BDEVFS_MAGIC                         = 0x62646576
+<<<<<<< HEAD
 	BINDERFS_SUPER_MAGIC                 = 0x6c6f6f70
+=======
+>>>>>>> Add etcd storage
 	BINFMTFS_MAGIC                       = 0x42494e4d
 	BLKBSZGET                            = 0x80081270
 	BLKBSZSET                            = 0x40081271
@@ -540,7 +543,10 @@ const (
 	FFDLY                                = 0x8000
 	FLUSHO                               = 0x1000
 	FPSIMD_MAGIC                         = 0x46508001
+<<<<<<< HEAD
 	FS_ENCRYPTION_MODE_ADIANTUM          = 0x9
+=======
+>>>>>>> Add etcd storage
 	FS_ENCRYPTION_MODE_AES_128_CBC       = 0x5
 	FS_ENCRYPTION_MODE_AES_128_CTS       = 0x6
 	FS_ENCRYPTION_MODE_AES_256_CBC       = 0x3
@@ -562,7 +568,11 @@ const (
 	FS_POLICY_FLAGS_PAD_4                = 0x0
 	FS_POLICY_FLAGS_PAD_8                = 0x1
 	FS_POLICY_FLAGS_PAD_MASK             = 0x3
+<<<<<<< HEAD
 	FS_POLICY_FLAGS_VALID                = 0x7
+=======
+	FS_POLICY_FLAGS_VALID                = 0x3
+>>>>>>> Add etcd storage
 	FUTEXFS_SUPER_MAGIC                  = 0xbad1dea
 	F_ADD_SEALS                          = 0x409
 	F_DUPFD                              = 0x0
@@ -687,7 +697,11 @@ const (
 	IFA_F_STABLE_PRIVACY                 = 0x800
 	IFA_F_TEMPORARY                      = 0x1
 	IFA_F_TENTATIVE                      = 0x40
+<<<<<<< HEAD
 	IFA_MAX                              = 0xa
+=======
+	IFA_MAX                              = 0x9
+>>>>>>> Add etcd storage
 	IFF_ALLMULTI                         = 0x200
 	IFF_ATTACH_QUEUE                     = 0x200
 	IFF_AUTOMEDIA                        = 0x4000
@@ -929,6 +943,7 @@ const (
 	IXOFF                                = 0x1000
 	IXON                                 = 0x400
 	JFFS2_SUPER_MAGIC                    = 0x72b6
+<<<<<<< HEAD
 	KEXEC_ARCH_386                       = 0x30000
 	KEXEC_ARCH_68K                       = 0x40000
 	KEXEC_ARCH_AARCH64                   = 0xb70000
@@ -949,6 +964,8 @@ const (
 	KEXEC_ON_CRASH                       = 0x1
 	KEXEC_PRESERVE_CONTEXT               = 0x2
 	KEXEC_SEGMENT_MAX                    = 0x10
+=======
+>>>>>>> Add etcd storage
 	KEYCTL_ASSUME_AUTHORITY              = 0x10
 	KEYCTL_CHOWN                         = 0x4
 	KEYCTL_CLEAR                         = 0x7
@@ -1056,6 +1073,7 @@ const (
 	MCL_CURRENT                          = 0x1
 	MCL_FUTURE                           = 0x2
 	MCL_ONFAULT                          = 0x4
+<<<<<<< HEAD
 	MFD_ALLOW_SEALING                    = 0x2
 	MFD_CLOEXEC                          = 0x1
 	MFD_HUGETLB                          = 0x4
@@ -1073,6 +1091,8 @@ const (
 	MFD_HUGE_8MB                         = 0x5c000000
 	MFD_HUGE_MASK                        = 0x3f
 	MFD_HUGE_SHIFT                       = 0x1a
+=======
+>>>>>>> Add etcd storage
 	MINIX2_SUPER_MAGIC                   = 0x2468
 	MINIX2_SUPER_MAGIC2                  = 0x2478
 	MINIX3_SUPER_MAGIC                   = 0x4d5a
@@ -1081,8 +1101,11 @@ const (
 	MNT_DETACH                           = 0x2
 	MNT_EXPIRE                           = 0x4
 	MNT_FORCE                            = 0x1
+<<<<<<< HEAD
 	MODULE_INIT_IGNORE_MODVERSIONS       = 0x1
 	MODULE_INIT_IGNORE_VERMAGIC          = 0x2
+=======
+>>>>>>> Add etcd storage
 	MSDOS_SUPER_MAGIC                    = 0x4d44
 	MSG_BATCH                            = 0x40000
 	MSG_CMSG_CLOEXEC                     = 0x40000000
@@ -1181,7 +1204,11 @@ const (
 	NETLINK_UNUSED                       = 0x1
 	NETLINK_USERSOCK                     = 0x2
 	NETLINK_XFRM                         = 0x6
+<<<<<<< HEAD
 	NETNSA_MAX                           = 0x5
+=======
+	NETNSA_MAX                           = 0x3
+>>>>>>> Add etcd storage
 	NETNSA_NSID_NOT_ASSIGNED             = -0x1
 	NFNETLINK_V0                         = 0x0
 	NFNLGRP_ACCT_QUOTA                   = 0x8
@@ -1353,6 +1380,7 @@ const (
 	PERF_EVENT_IOC_SET_FILTER            = 0x40082406
 	PERF_EVENT_IOC_SET_OUTPUT            = 0x2405
 	PIPEFS_MAGIC                         = 0x50495045
+<<<<<<< HEAD
 	PPPIOCATTACH                         = 0x4004743d
 	PPPIOCATTCHAN                        = 0x40047438
 	PPPIOCCONNECT                        = 0x4004743a
@@ -1383,6 +1411,8 @@ const (
 	PPPIOCSRASYNCMAP                     = 0x40047454
 	PPPIOCSXASYNCMAP                     = 0x4020744f
 	PPPIOCXFERUNIT                       = 0x744e
+=======
+>>>>>>> Add etcd storage
 	PRIO_PGRP                            = 0x1
 	PRIO_PROCESS                         = 0x0
 	PRIO_USER                            = 0x2
@@ -1490,7 +1520,10 @@ const (
 	PR_SPEC_DISABLE                      = 0x4
 	PR_SPEC_ENABLE                       = 0x2
 	PR_SPEC_FORCE_DISABLE                = 0x8
+<<<<<<< HEAD
 	PR_SPEC_INDIRECT_BRANCH              = 0x1
+=======
+>>>>>>> Add etcd storage
 	PR_SPEC_NOT_AFFECTED                 = 0x0
 	PR_SPEC_PRCTL                        = 0x1
 	PR_SPEC_STORE_BYPASS                 = 0x0
@@ -1796,8 +1829,11 @@ const (
 	SECCOMP_MODE_STRICT                  = 0x1
 	SECURITYFS_MAGIC                     = 0x73636673
 	SELINUX_MAGIC                        = 0xf97cff8c
+<<<<<<< HEAD
 	SFD_CLOEXEC                          = 0x80000
 	SFD_NONBLOCK                         = 0x800
+=======
+>>>>>>> Add etcd storage
 	SHUT_RD                              = 0x0
 	SHUT_RDWR                            = 0x2
 	SHUT_WR                              = 0x1
@@ -2445,6 +2481,7 @@ const (
 	XATTR_CREATE                         = 0x1
 	XATTR_REPLACE                        = 0x2
 	XCASE                                = 0x4
+<<<<<<< HEAD
 	XDP_COPY                             = 0x2
 	XDP_FLAGS_DRV_MODE                   = 0x4
 	XDP_FLAGS_HW_MODE                    = 0x8
@@ -2467,6 +2504,9 @@ const (
 	XDP_ZEROCOPY                         = 0x4
 	XENFS_SUPER_MAGIC                    = 0xabba1974
 	XFS_SUPER_MAGIC                      = 0x58465342
+=======
+	XENFS_SUPER_MAGIC                    = 0xabba1974
+>>>>>>> Add etcd storage
 	XTABS                                = 0x1800
 	ZSMALLOC_MAGIC                       = 0x58295829
 )

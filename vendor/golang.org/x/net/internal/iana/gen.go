@@ -28,11 +28,19 @@ var registries = []struct {
 	parse func(io.Writer, io.Reader) error
 }{
 	{
-		"https://www.iana.org/assignments/dscp-registry/dscp-registry.xml",
+		"http://www.iana.org/assignments/dscp-registry/dscp-registry.xml",
 		parseDSCPRegistry,
 	},
 	{
+<<<<<<< HEAD
 		"https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xml",
+=======
+		"http://www.iana.org/assignments/ipv4-tos-byte/ipv4-tos-byte.xml",
+		parseTOSTCByte,
+	},
+	{
+		"http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xml",
+>>>>>>> Add etcd storage
 		parseProtocolNumbers,
 	},
 	{

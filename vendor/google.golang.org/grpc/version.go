@@ -19,4 +19,8 @@
 package grpc
 
 // Version is the current grpc version.
+<<<<<<< HEAD
 const Version = "1.19.1"
+=======
+const Version = "1.14.0"
+>>>>>>> Add etcd storage

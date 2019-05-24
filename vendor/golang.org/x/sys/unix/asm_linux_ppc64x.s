@@ -15,6 +15,15 @@
 // Just jump to package syscall's implementation for all these functions.
 // The runtime may know about them.
 
+<<<<<<< HEAD
+=======
+TEXT ·Syscall(SB),NOSPLIT,$0-56
+	BR	syscall·Syscall(SB)
+
+TEXT ·Syscall6(SB),NOSPLIT,$0-80
+	BR	syscall·Syscall6(SB)
+
+>>>>>>> Add etcd storage
 TEXT ·SyscallNoError(SB),NOSPLIT,$0-48
 	BL	runtime·entersyscall(SB)
 	MOVD	a1+8(FP), R3
@@ -30,6 +39,15 @@ TEXT ·SyscallNoError(SB),NOSPLIT,$0-48
 	BL	runtime·exitsyscall(SB)
 	RET
 
+<<<<<<< HEAD
+=======
+TEXT ·RawSyscall(SB),NOSPLIT,$0-56
+	BR	syscall·RawSyscall(SB)
+
+TEXT ·RawSyscall6(SB),NOSPLIT,$0-80
+	BR	syscall·RawSyscall6(SB)
+
+>>>>>>> Add etcd storage
 TEXT ·RawSyscallNoError(SB),NOSPLIT,$0-48
 	MOVD	a1+8(FP), R3
 	MOVD	a2+16(FP), R4

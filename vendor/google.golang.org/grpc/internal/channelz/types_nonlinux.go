@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // +build !linux appengine
+=======
+// +build !linux appengine !go1.7
+>>>>>>> Add etcd storage
 
 /*
  *
@@ -20,6 +24,7 @@
 
 package channelz
 
+<<<<<<< HEAD
 import (
 	"sync"
 
@@ -27,6 +32,13 @@ import (
 )
 
 var once sync.Once
+=======
+import "google.golang.org/grpc/grpclog"
+
+func init() {
+	grpclog.Infof("Channelz: socket options are not supported on non-linux os and appengine.")
+}
+>>>>>>> Add etcd storage
 
 // SocketOptionData defines the struct to hold socket option data, and related
 // getter function to obtain info from fd.
@@ -37,8 +49,12 @@ type SocketOptionData struct {
 // Getsockopt defines the function to get socket options requested by channelz.
 // It is to be passed to syscall.RawConn.Control().
 // Windows OS doesn't support Socket Option
+<<<<<<< HEAD
 func (s *SocketOptionData) Getsockopt(fd uintptr) {
 	once.Do(func() {
 		grpclog.Warningln("Channelz: socket options are not supported on non-linux os and appengine.")
 	})
 }
+=======
+func (s *SocketOptionData) Getsockopt(fd uintptr) {}
+>>>>>>> Add etcd storage

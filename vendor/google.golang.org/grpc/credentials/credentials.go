@@ -33,7 +33,11 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
+<<<<<<< HEAD
 	"google.golang.org/grpc/credentials/internal"
+=======
+	"golang.org/x/net/context"
+>>>>>>> Add etcd storage
 )
 
 // alpnProtoStr are the specified application level protocols for gRPC.
@@ -139,8 +143,13 @@ func (t TLSInfo) AuthType() string {
 	return "tls"
 }
 
+<<<<<<< HEAD
 // GetSecurityValue returns security info requested by channelz.
 func (t TLSInfo) GetSecurityValue() ChannelzSecurityValue {
+=======
+// GetChannelzSecurityValue returns security info requested by channelz.
+func (t TLSInfo) GetChannelzSecurityValue() ChannelzSecurityValue {
+>>>>>>> Add etcd storage
 	v := &TLSChannelzSecurityValue{
 		StandardName: cipherSuiteLookup[t.State.CipherSuite],
 	}
@@ -188,7 +197,11 @@ func (c *tlsCreds) ClientHandshake(ctx context.Context, authority string, rawCon
 	case <-ctx.Done():
 		return nil, nil, ctx.Err()
 	}
+<<<<<<< HEAD
 	return internal.WrapSyscallConn(rawConn, conn), TLSInfo{conn.ConnectionState()}, nil
+=======
+	return tlsConn{Conn: conn, rawConn: rawConn}, TLSInfo{conn.ConnectionState()}, nil
+>>>>>>> Add etcd storage
 }
 
 func (c *tlsCreds) ServerHandshake(rawConn net.Conn) (net.Conn, AuthInfo, error) {
@@ -196,7 +209,11 @@ func (c *tlsCreds) ServerHandshake(rawConn net.Conn) (net.Conn, AuthInfo, error)
 	if err := conn.Handshake(); err != nil {
 		return nil, nil, err
 	}
+<<<<<<< HEAD
 	return internal.WrapSyscallConn(rawConn, conn), TLSInfo{conn.ConnectionState()}, nil
+=======
+	return tlsConn{Conn: conn, rawConn: rawConn}, TLSInfo{conn.ConnectionState()}, nil
+>>>>>>> Add etcd storage
 }
 
 func (c *tlsCreds) Clone() TransportCredentials {
@@ -286,6 +303,14 @@ type OtherChannelzSecurityValue struct {
 
 func (*OtherChannelzSecurityValue) isChannelzSecurityValue() {}
 
+<<<<<<< HEAD
+=======
+type tlsConn struct {
+	*tls.Conn
+	rawConn net.Conn
+}
+
+>>>>>>> Add etcd storage
 var cipherSuiteLookup = map[uint16]string{
 	tls.TLS_RSA_WITH_RC4_128_SHA:                "TLS_RSA_WITH_RC4_128_SHA",
 	tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA:           "TLS_RSA_WITH_3DES_EDE_CBC_SHA",
@@ -305,6 +330,7 @@ var cipherSuiteLookup = map[uint16]string{
 	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:   "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
 	tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
 	tls.TLS_FALLBACK_SCSV:                       "TLS_FALLBACK_SCSV",
+<<<<<<< HEAD
 	tls.TLS_RSA_WITH_AES_128_CBC_SHA256:         "TLS_RSA_WITH_AES_128_CBC_SHA256",
 	tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256: "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
 	tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256:   "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
@@ -325,4 +351,6 @@ func cloneTLSConfig(cfg *tls.Config) *tls.Config {
 	}
 
 	return cfg.Clone()
+=======
+>>>>>>> Add etcd storage
 }

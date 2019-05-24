@@ -459,8 +459,11 @@ const (
 	POLLWRNORM = 0x4
 )
 
+<<<<<<< HEAD
 type Sigset_t uint32
 
+=======
+>>>>>>> Add etcd storage
 type Utsname struct {
 	Sysname  [256]byte
 	Nodename [256]byte
@@ -468,6 +471,7 @@ type Utsname struct {
 	Version  [256]byte
 	Machine  [256]byte
 }
+<<<<<<< HEAD
 
 const SizeofUvmexp = 0x158
 
@@ -569,3 +573,5 @@ type Clockinfo struct {
 	Stathz  int32
 	Profhz  int32
 }
+=======
+>>>>>>> Add etcd storage

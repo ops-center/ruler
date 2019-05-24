@@ -24,7 +24,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+<<<<<<< HEAD:vendor/google.golang.org/grpc/internal/transport/http_util.go
 	"math"
+=======
+>>>>>>> Add etcd storage:vendor/google.golang.org/grpc/internal/transport/http_util.go
 	"net"
 	"net/http"
 	"strconv"
