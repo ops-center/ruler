@@ -5,9 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/prometheus/prometheus/rules"
+	"github.com/stretchr/testify/assert"
 )
 
 type fakeHasher struct {

@@ -10,31 +10,25 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
-
-	"github.com/searchlight/ruler/pkg/cluster"
-
-	"github.com/prometheus/prometheus/discovery"
-
-	logger2 "github.com/searchlight/ruler/pkg/logger"
-
-	"github.com/prometheus/prometheus/discovery/targetgroup"
-	"github.com/searchlight/ruler/pkg/m3coordinator"
-
 	gklog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/config"
+	"github.com/prometheus/prometheus/discovery"
 	sd_config "github.com/prometheus/prometheus/discovery/config"
+	"github.com/prometheus/prometheus/discovery/targetgroup"
 	"github.com/prometheus/prometheus/notifier"
 	"github.com/prometheus/prometheus/rules"
 	"github.com/prometheus/prometheus/util/strutil"
+	"github.com/searchlight/ruler/pkg/cluster"
+	logger2 "github.com/searchlight/ruler/pkg/logger"
+	"github.com/searchlight/ruler/pkg/m3coordinator"
+	"github.com/weaveworks/common/instrument"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
-
-	"github.com/weaveworks/common/instrument"
 )
 
 var (

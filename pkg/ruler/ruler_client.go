@@ -3,8 +3,6 @@ package ruler
 import (
 	"time"
 
-	"github.com/searchlight/ruler/pkg/logger"
-
 	erragg "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
@@ -13,6 +11,7 @@ import (
 	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/rules"
 	"github.com/searchlight/prom-query-handler/promquery"
+	"github.com/searchlight/ruler/pkg/logger"
 )
 
 type RuleGroupsWithInfo struct {

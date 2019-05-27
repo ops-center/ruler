@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/golang/glog"
-
 	"github.com/gorilla/mux"
+	"gopkg.in/yaml.v2"
 )
 
 // API implements the configs api.

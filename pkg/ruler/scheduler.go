@@ -9,15 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/searchlight/ruler/pkg/logger"
-
+	"github.com/cortexproject/cortex/pkg/util"
 	"github.com/go-kit/kit/log/level"
 	"github.com/jonboulle/clockwork"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/prometheus/rules"
-
-	"github.com/cortexproject/cortex/pkg/util"
+	"github.com/searchlight/ruler/pkg/logger"
 	"github.com/weaveworks/common/instrument"
 )
 

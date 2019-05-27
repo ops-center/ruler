@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/searchlight/ruler/pkg/m3query"
-
-	"github.com/searchlight/ruler/pkg/logger"
-
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/searchlight/ruler/pkg/logger"
 	"github.com/searchlight/ruler/pkg/m3coordinator"
+	"github.com/searchlight/ruler/pkg/m3query"
 	"github.com/searchlight/ruler/pkg/ruler"
 	"github.com/spf13/cobra"
 )

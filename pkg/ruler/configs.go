@@ -4,10 +4,9 @@ import (
 	"flag"
 	"time"
 
-	"github.com/searchlight/ruler/pkg/cluster"
-
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/promql"
+	"github.com/searchlight/ruler/pkg/cluster"
 	"github.com/spf13/pflag"
 )
 

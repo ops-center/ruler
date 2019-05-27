@@ -14,12 +14,11 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log/level"
-	"github.com/prometheus/prometheus/pkg/labels"
-	"github.com/searchlight/ruler/pkg/logger"
-
 	"github.com/pkg/errors"
+	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/rules"
+	"github.com/searchlight/ruler/pkg/logger"
 )
 
 const (
