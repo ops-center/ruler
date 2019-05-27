@@ -8,11 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/prometheus/prometheus/pkg/labels"
-	"github.com/prometheus/prometheus/promql"
-
 	"github.com/cortexproject/cortex/pkg/querier"
 	"github.com/prometheus/prometheus/notifier"
+	"github.com/prometheus/prometheus/pkg/labels"
+	"github.com/prometheus/prometheus/promql"
 	"github.com/stretchr/testify/assert"
 	"github.com/weaveworks/common/user"
 )
