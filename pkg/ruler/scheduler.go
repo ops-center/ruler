@@ -6,6 +6,7 @@ import (
 	"hash"
 	"hash/fnv"
 	"math"
+	"strings"
 	"sync"
 	"time"
 
@@ -59,6 +60,7 @@ type workItem struct {
 	ruleGroupName string
 	group         *group
 	scheduled     time.Time
+	interval      time.Duration
 }
 
 // Key implements ScheduledItem
@@ -73,7 +75,7 @@ func (w workItem) Scheduled() time.Time {
 
 // Defer returns a work item with updated rules, rescheduled to a later time.
 func (w workItem) Defer(interval time.Duration) workItem {
-	return workItem{w.userID, w.groupID, w.ruleGroupName, w.group, w.scheduled.Add(interval)}
+	return workItem{userID: w.userID, groupID: w.groupID, ruleGroupName: w.ruleGroupName, group: w.group, scheduled: w.scheduled.Add(interval), interval: w.interval}
 }
 
 func (w workItem) String() string {
@@ -82,6 +84,7 @@ func (w workItem) String() string {
 
 type ruleGroup struct {
 	ruleGroupName string
+	interval      time.Duration
 	rules         []rules.Rule
 }
 
@@ -98,8 +101,7 @@ type scheduler struct {
 
 	pollInterval time.Duration // how often we check for new rules
 
-	rulesList            map[string]userRules // all rules for all users
-	rulesUpdatedAtInUnix int64                // rules updated time
+	processingRules map[ruleKey]bool // keep tracks of all processing rules for all users, key should be userID:groupID
 
 	groupFn groupFactory // function to create a new group
 	sync.RWMutex
@@ -115,7 +117,7 @@ func newScheduler(rc RuleGetter, evaluationInterval, pollInterval time.Duration,
 		evaluationInterval: evaluationInterval,
 		pollInterval:       pollInterval,
 		q:                  NewSchedulingQueue(clockwork.NewRealClock()),
-		rulesList:          map[string]userRules{},
+		processingRules:    map[ruleKey]bool{},
 		groupFn:            groupFn,
 
 		stop: make(chan struct{}),
@@ -153,10 +155,10 @@ func (s *scheduler) Stop() {
 
 // Load the full set of rules from the server, retrying with backoff
 // until we can get them.
-func (s *scheduler) loadAllRules() map[string][]RuleGroupsWithInfo {
+func (s *scheduler) loadAllRules() []RuleGroupsWithInfo {
 	backoff := util.NewBackoff(context.Background(), backoffConfig)
 	for {
-		cfgs, err := s.poll(0)
+		cfgs, err := s.poll(true)
 		if err == nil {
 			level.Debug(logger.Logger).Log("msg", "scheduler: initial rules load", "num_ruless", len(cfgs))
 			return cfgs
@@ -167,33 +169,25 @@ func (s *scheduler) loadAllRules() map[string][]RuleGroupsWithInfo {
 }
 
 func (s *scheduler) updateRules(now time.Time) error {
-	s.Lock()
-	after := s.rulesUpdatedAtInUnix
-	s.Unlock()
-	rls, err := s.poll(after)
+	rls, err := s.poll(false)
 	if err != nil {
 		return err
 	}
-
-	s.Lock()
-	s.rulesUpdatedAtInUnix = getLatestUpdateTime(rls, s.rulesUpdatedAtInUnix)
-	s.Unlock()
 
 	s.addNewRules(now, rls)
 	return nil
 }
 
-// poll all the rules updated or added after given time
-// given time in unix format
-// if given time is 0, then it will fetch all the rules
-func (s *scheduler) poll(after int64) (map[string][]RuleGroupsWithInfo, error) {
-	var rules map[string][]RuleGroupsWithInfo
+// poll all the newly updated or deleted rules
+// if 'all' is true then it will fetch all the rules
+func (s *scheduler) poll(all bool) ([]RuleGroupsWithInfo, error) {
+	var rules []RuleGroupsWithInfo
 	err := instrument.CollectedRequest(context.Background(), "Rules.GetRules", rulesRequestDuration, instrument.ErrorCode, func(_ context.Context) error {
 		var err error
-		if after == 0 {
+		if all {
 			rules, err = s.ruleClient.GetAllRuleGroups()
 		} else {
-			rules, err = s.ruleClient.GetAllRuleGroupsUpdatedOrDeletedAfter(after)
+			rules, err = s.ruleClient.GetAllUpdatedRuleGroups()
 		}
 		return err
 	})
@@ -221,68 +215,59 @@ func (s *scheduler) computeNextEvalTime(hasher hash.Hash64, now time.Time, userI
 	return now.Add(time.Duration(int64(offset)))
 }
 
-func (s *scheduler) addNewRules(now time.Time, ruleList map[string][]RuleGroupsWithInfo) {
+func (s *scheduler) addNewRules(now time.Time, rList []RuleGroupsWithInfo) {
 	// TODO: instrument how many rules we have, both valid & invalid.
-	level.Debug(logger.Logger).Log("msg", "adding rules", "num_rules", len(ruleList))
-	hasher := fnv.New64a()
+	level.Debug(logger.Logger).Log("msg", "adding rules", "num_rules", len(rList))
+	s.addOrRemoveRules(now, rList)
 
-	for userID, rules := range ruleList {
-		s.addOrRemoveUserRules(now, hasher, userID, rules)
-	}
-
-	ruleUpdates.Add(float64(len(ruleList)))
+	ruleUpdates.Add(float64(len(rList)))
 	s.Lock()
-	lenRules := len(s.rulesList)
+	lenRules := len(s.processingRules)
 	s.Unlock()
 	totalUserRules.Set(float64(lenRules))
 }
 
-// TODO: think about the lock, will it block it for long time
 // add or update or delete rules
-func (s *scheduler) addOrRemoveUserRules(now time.Time, hasher hash.Hash64, userID string, rList []RuleGroupsWithInfo) {
-	rulesByGroup := map[string][]ruleGroup{}
-	s.Lock()
-	defer s.Unlock()
-	if usrRules, found := s.rulesList[userID]; found {
-		rulesByGroup = usrRules.ruleList
-	}
+func (s *scheduler) addOrRemoveRules(now time.Time, rList []RuleGroupsWithInfo) {
 
+	// key should be userID:groupID
+	rulesByGroup := map[ruleKey][]ruleGroup{}
 	for _, r := range rList {
+		key := GetRuleKey(r.UserID, r.ID)
+
 		// check whether this rule deleted or not
 		if r.DeletedAtInUnix > 0 {
-			if _, found := rulesByGroup[r.ID]; found {
-				delete(rulesByGroup, r.ID)
+			s.Lock()
+			if _, found := s.processingRules[key]; found {
+				delete(s.processingRules, key)
 			}
+			s.Unlock()
 			continue
+		} else {
+			s.Lock()
+			s.processingRules[key] = true
+			s.Unlock()
 		}
 
 		rls, err := r.Parse()
 		if err != nil {
-			level.Warn(logger.Logger).Log("msg", "scheduler: invalid rule group", "user_id", userID, "err", err)
+			level.Warn(logger.Logger).Log("msg", "scheduler: invalid rule group", "user_id", key.UserID(), "group_id", key.GroupID(), "err", err)
 			return
 		}
-		rulesByGroup[r.ID] = rls
+		rulesByGroup[key] = rls
 	}
 
-	// update or delete map
-	if len(rulesByGroup) == 0 {
-		if _, found := s.rulesList[userID]; found {
-			delete(s.rulesList, userID)
-			level.Info(logger.Logger).Log("msg", "scheduler: deleting user", "user_id", userID)
-		}
-		return
-	}
+	level.Info(logger.Logger).Log("msg", "scheduler: updating rules", "num_groups", len(rulesByGroup))
 
-	s.rulesList[userID] = userRules{rulesByGroup}
-
-	level.Info(logger.Logger).Log("msg", "scheduler: updating rules for user", "user_id", userID, "num_groups", len(rulesByGroup))
-
-	evalTime := s.computeNextEvalTime(hasher, now, userID)
+	hasher := fnv.New64a()
 	workItems := []workItem{}
-	// TODO: Do we need to go through every rule or just updated rule will do
-	for groupID, rules := range rulesByGroup {
-		level.Debug(logger.Logger).Log("msg", "scheduler: updating rules for user and group", "user_id", userID, "group", groupID, "num_rules", len(rules))
 
+	for key, rules := range rulesByGroup {
+		userID := key.UserID()
+		groupID := key.GroupID()
+		evalTime := s.computeNextEvalTime(hasher, now, userID)
+
+		level.Debug(logger.Logger).Log("msg", "scheduler: updating rules for user and group", "user_id", userID, "group", groupID, "num_rules", len(rules))
 		for _, rg := range rules {
 			g, err := s.groupFn(userID, groupID, rg.ruleGroupName, rg.rules)
 			if err != nil {
@@ -292,7 +277,12 @@ func (s *scheduler) addOrRemoveUserRules(now time.Time, hasher hash.Hash64, user
 				level.Warn(logger.Logger).Log("msg", "scheduler: failed to create group for user", "user_id", userID, "group", groupID, "err", err)
 				return
 			}
-			workItems = append(workItems, workItem{userID, groupID, rg.ruleGroupName, g, evalTime})
+
+			// TODO: set min interval limitations?
+			if rg.interval == 0 {
+				rg.interval = s.evaluationInterval
+			}
+			workItems = append(workItems, workItem{userID: userID, groupID: groupID, ruleGroupName: rg.ruleGroupName, group: g, scheduled: evalTime, interval: rg.interval})
 		}
 	}
 
@@ -328,34 +318,34 @@ func (s *scheduler) nextWorkItem() *workItem {
 // workItemDone marks the given item as being ready to be rescheduled.
 func (s *scheduler) workItemDone(i workItem) {
 	s.Lock()
-	usrRules, found := s.rulesList[i.userID]
-	var currentRules []ruleGroup
-	if found {
-		currentRules = usrRules.ruleList[i.groupID]
-	}
+	processing, found := s.processingRules[GetRuleKey(i.userID, i.groupID)]
 	s.Unlock()
-	if !found || len(currentRules) == 0 {
-		level.Debug(logger.Logger).Log("msg", "scheduler: stopping item", "user_id", i.userID, "group_id", i.groupID, "rule_group", i.ruleGroupName, "found", found, "len", len(currentRules))
+	if !found || !processing {
+		level.Debug(logger.Logger).Log("msg", "scheduler: stopping item", "user_id", i.userID, "group_id", i.groupID, "rule_group", i.ruleGroupName, "found", found)
 		return
 	}
 
 	// TODO: Add check whether this user belongs to this node
 
-	next := i.Defer(s.evaluationInterval)
+	interval := s.evaluationInterval
+	if i.interval != 0 {
+		interval = i.interval
+	}
+	next := i.Defer(interval)
 	level.Debug(logger.Logger).Log("msg", "scheduler: work item rescheduled", "item", i, "time", next.scheduled.Format(timeLogFormat))
 	s.addWorkItem(next)
 }
 
-func getLatestUpdateTime(rls map[string][]RuleGroupsWithInfo, cur int64) int64 {
-	for _, rs := range rls {
-		for _, r := range rs {
-			if cur < r.UpdatedAtInUnix {
-				cur = r.UpdatedAtInUnix
-			}
-			if cur < r.DeletedAtInUnix {
-				cur = r.DeletedAtInUnix
-			}
-		}
-	}
-	return cur
+type ruleKey string
+
+func GetRuleKey(userID, rGroupID string) ruleKey {
+	return ruleKey(fmt.Sprintf("%s:%s", userID, rGroupID))
+}
+
+func (k ruleKey) UserID() string {
+	return strings.Split(string(k), ":")[0]
+}
+
+func (k ruleKey) GroupID() string {
+	return strings.Split(string(k), ":")[1]
 }

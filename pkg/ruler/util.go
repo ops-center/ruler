@@ -33,7 +33,7 @@ func SetUserIDInHTTPRequest(userID string, r *http.Request) error {
 	return nil
 }
 
-func getLables(id string) []labels.Label {
+func GetLables(id string) []labels.Label {
 	return []labels.Label{
 		{
 			Name:  "client_id",
