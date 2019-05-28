@@ -265,93 +265,6 @@ func Lremovexattr(link string, attr string) (err error) {
 	return removexattr(link, attr, XATTR_NOFOLLOW)
 }
 
-<<<<<<< HEAD
-=======
-func xattrPointer(dest []byte) *byte {
-	// It's only when dest is set to NULL that the OS X implementations of
-	// getxattr() and listxattr() return the current sizes of the named attributes.
-	// An empty byte array is not sufficient. To maintain the same behaviour as the
-	// linux implementation, we wrap around the system calls and pass in NULL when
-	// dest is empty.
-	var destp *byte
-	if len(dest) > 0 {
-		destp = &dest[0]
-	}
-	return destp
-}
-
-//sys	getxattr(path string, attr string, dest *byte, size int, position uint32, options int) (sz int, err error)
-
-func Getxattr(path string, attr string, dest []byte) (sz int, err error) {
-	return getxattr(path, attr, xattrPointer(dest), len(dest), 0, 0)
-}
-
-func Lgetxattr(link string, attr string, dest []byte) (sz int, err error) {
-	return getxattr(link, attr, xattrPointer(dest), len(dest), 0, XATTR_NOFOLLOW)
-}
-
-//sys	fgetxattr(fd int, attr string, dest *byte, size int, position uint32, options int) (sz int, err error)
-
-func Fgetxattr(fd int, attr string, dest []byte) (sz int, err error) {
-	return fgetxattr(fd, attr, xattrPointer(dest), len(dest), 0, 0)
-}
-
-//sys	setxattr(path string, attr string, data *byte, size int, position uint32, options int) (err error)
-
-func Setxattr(path string, attr string, data []byte, flags int) (err error) {
-	// The parameters for the OS X implementation vary slightly compared to the
-	// linux system call, specifically the position parameter:
-	//
-	//  linux:
-	//      int setxattr(
-	//          const char *path,
-	//          const char *name,
-	//          const void *value,
-	//          size_t size,
-	//          int flags
-	//      );
-	//
-	//  darwin:
-	//      int setxattr(
-	//          const char *path,
-	//          const char *name,
-	//          void *value,
-	//          size_t size,
-	//          u_int32_t position,
-	//          int options
-	//      );
-	//
-	// position specifies the offset within the extended attribute. In the
-	// current implementation, only the resource fork extended attribute makes
-	// use of this argument. For all others, position is reserved. We simply
-	// default to setting it to zero.
-	return setxattr(path, attr, xattrPointer(data), len(data), 0, flags)
-}
-
-func Lsetxattr(link string, attr string, data []byte, flags int) (err error) {
-	return setxattr(link, attr, xattrPointer(data), len(data), 0, flags|XATTR_NOFOLLOW)
-}
-
-//sys	fsetxattr(fd int, attr string, data *byte, size int, position uint32, options int) (err error)
-
-func Fsetxattr(fd int, attr string, data []byte, flags int) (err error) {
-	return fsetxattr(fd, attr, xattrPointer(data), len(data), 0, 0)
-}
-
-//sys	removexattr(path string, attr string, options int) (err error)
-
-func Removexattr(path string, attr string) (err error) {
-	// We wrap around and explicitly zero out the options provided to the OS X
-	// implementation of removexattr, we do so for interoperability with the
-	// linux variant.
-	return removexattr(path, attr, 0)
-}
-
-func Lremovexattr(link string, attr string) (err error) {
-	return removexattr(link, attr, XATTR_NOFOLLOW)
-}
-
->>>>>>> Add etcd storage
 //sys	fremovexattr(fd int, attr string, options int) (err error)
 
 func Fremovexattr(fd int, attr string) (err error) {
@@ -390,7 +303,6 @@ func setattrlistTimes(path string, times []Timespec, flags int) error {
 	if flags&AT_SYMLINK_NOFOLLOW != 0 {
 		options |= FSOPT_NOFOLLOW
 	}
-<<<<<<< HEAD
 	return setattrlist(
 		_p0,
 		unsafe.Pointer(&attrList),
@@ -401,23 +313,6 @@ func setattrlistTimes(path string, times []Timespec, flags int) error {
 
 //sys setattrlist(path *byte, list unsafe.Pointer, buf unsafe.Pointer, size uintptr, options int) (err error)
 
-=======
-	_, _, e1 := Syscall6(
-		SYS_SETATTRLIST,
-		uintptr(unsafe.Pointer(_p0)),
-		uintptr(unsafe.Pointer(&attrList)),
-		uintptr(unsafe.Pointer(&attributes)),
-		uintptr(unsafe.Sizeof(attributes)),
-		uintptr(options),
-		0,
-	)
-	if e1 != 0 {
-		return e1
-	}
-	return nil
-}
-
->>>>>>> Add etcd storage
 func utimensat(dirfd int, path string, times *[2]Timespec, flags int) error {
 	// Darwin doesn't support SYS_UTIMENSAT
 	return ENOSYS
@@ -516,7 +411,6 @@ func Uname(uname *Utsname) error {
 	return nil
 }
 
-<<<<<<< HEAD
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
@@ -529,8 +423,6 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 
 //sys	sendfile(infd int, outfd int, offset int64, len *int64, hdtr unsafe.Pointer, flags int) (err error)
 
-=======
->>>>>>> Add etcd storage
 /*
  * Exposed directly
  */
@@ -556,12 +448,6 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 //sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
 //sys	Flock(fd int, how int) (err error)
 //sys	Fpathconf(fd int, name int) (val int, err error)
-<<<<<<< HEAD
-=======
-//sys	Fstat(fd int, stat *Stat_t) (err error) = SYS_FSTAT64
-//sys	Fstatat(fd int, path string, stat *Stat_t, flags int) (err error) = SYS_FSTATAT64
-//sys	Fstatfs(fd int, stat *Statfs_t) (err error) = SYS_FSTATFS64
->>>>>>> Add etcd storage
 //sys	Fsync(fd int) (err error)
 //sys	Ftruncate(fd int, length int64) (err error)
 //sys	Getdtablesize() (size int)

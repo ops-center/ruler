@@ -3,7 +3,6 @@ package querier
 import (
 	"context"
 
-	"github.com/cortexproject/cortex/pkg/ingester/client"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
@@ -45,14 +44,14 @@ func (q *chunkStoreQuerier) Select(sp *storage.SelectParams, matchers ...*labels
 func (q *chunkStoreQuerier) partitionChunks(chunks []chunk.Chunk) storage.SeriesSet {
 	chunksBySeries := map[model.Fingerprint][]chunk.Chunk{}
 	for _, c := range chunks {
-		fp := client.Fingerprint(c.Metric)
+		fp := c.Metric.Fingerprint()
 		chunksBySeries[fp] = append(chunksBySeries[fp], c)
 	}
 
 	series := make([]storage.Series, 0, len(chunksBySeries))
 	for i := range chunksBySeries {
 		series = append(series, &chunkSeries{
-			labels:            chunksBySeries[i][0].Metric,
+			labels:            metricToLabels(chunksBySeries[i][0].Metric),
 			chunks:            chunksBySeries[i],
 			chunkIteratorFunc: q.chunkIteratorFunc,
 			mint:              q.mint,

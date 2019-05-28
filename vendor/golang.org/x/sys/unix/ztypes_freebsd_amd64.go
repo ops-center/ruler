@@ -56,14 +56,11 @@ type Rlimit struct {
 
 type _Gid_t uint32
 
-<<<<<<< HEAD
 const (
 	_statfsVersion = 0x20140518
 	_dirblksiz     = 0x400
 )
 
-=======
->>>>>>> Add etcd storage
 type Stat_t struct {
 	Dev      uint64
 	Ino      uint64

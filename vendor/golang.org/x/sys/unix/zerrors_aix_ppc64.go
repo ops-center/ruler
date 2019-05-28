@@ -867,12 +867,9 @@ const (
 	TAB2                          = 0x800
 	TAB3                          = 0xc00
 	TABDLY                        = 0xc00
-<<<<<<< HEAD
 	TCFLSH                        = 0x540c
 	TCGETA                        = 0x5405
 	TCGETS                        = 0x5401
-=======
->>>>>>> Add etcd storage
 	TCIFLUSH                      = 0x0
 	TCIOFF                        = 0x2
 	TCIOFLUSH                     = 0x2
@@ -921,7 +918,6 @@ const (
 	TCP_TIMESTAMP_OPTLEN          = 0xc
 	TCP_UNSETPRIV                 = 0x28
 	TCSAFLUSH                     = 0x2
-<<<<<<< HEAD
 	TCSBRK                        = 0x5409
 	TCSETA                        = 0x5406
 	TCSETAF                       = 0x5408
@@ -931,8 +927,6 @@ const (
 	TCSETSW                       = 0x5403
 	TCXONC                        = 0x540b
 	TIOC                          = 0x5400
-=======
->>>>>>> Add etcd storage
 	TIOCCBRK                      = 0x2000747a
 	TIOCCDTR                      = 0x20007478
 	TIOCCONS                      = 0xffffffff80047462

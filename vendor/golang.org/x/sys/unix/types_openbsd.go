@@ -261,7 +261,6 @@ const (
 	POLLWRNORM = C.POLLWRNORM
 )
 
-<<<<<<< HEAD
 // Signal Sets
 
 type Sigset_t C.sigset_t
@@ -281,8 +280,3 @@ type Uvmexp C.struct_uvmexp
 const SizeofClockinfo = C.sizeof_struct_clockinfo
 
 type Clockinfo C.struct_clockinfo
-=======
-// Uname
-
-type Utsname C.struct_utsname
->>>>>>> Add etcd storage

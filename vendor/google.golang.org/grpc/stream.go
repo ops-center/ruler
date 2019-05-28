@@ -33,10 +33,7 @@ import (
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/grpclog"
-<<<<<<< HEAD
 	"google.golang.org/grpc/internal/binarylog"
-=======
->>>>>>> Add etcd storage
 	"google.golang.org/grpc/internal/channelz"
 	"google.golang.org/grpc/internal/grpcrand"
 	"google.golang.org/grpc/internal/transport"
@@ -112,12 +109,8 @@ type ClientStream interface {
 	//
 	// It is safe to have a goroutine calling SendMsg and another goroutine
 	// calling RecvMsg on the same stream at the same time, but it is not safe
-<<<<<<< HEAD
 	// to call SendMsg on the same stream in different goroutines. It is also
 	// not safe to call CloseSend concurrently with SendMsg.
-=======
-	// to call SendMsg on the same stream in different goroutines.
->>>>>>> Add etcd storage
 	SendMsg(m interface{}) error
 	// RecvMsg blocks until it receives a message into m or the stream is
 	// done. It returns io.EOF when the stream completes successfully. On
@@ -279,10 +272,7 @@ func newClientStream(ctx context.Context, desc *StreamDesc, cc *ClientConn, meth
 	if !cc.dopts.disableRetry {
 		cs.retryThrottler = cc.retryThrottler.Load().(*retryThrottler)
 	}
-<<<<<<< HEAD
 	cs.binlog = binarylog.GetMethodLogger(method)
-=======
->>>>>>> Add etcd storage
 
 	cs.callInfo.stream = cs
 	// Only this initial attempt has stats/tracing.
@@ -296,7 +286,6 @@ func newClientStream(ctx context.Context, desc *StreamDesc, cc *ClientConn, meth
 	if err := cs.withRetry(op, func() { cs.bufferForRetryLocked(0, op) }); err != nil {
 		cs.finish(err)
 		return nil, err
-<<<<<<< HEAD
 	}
 
 	if cs.binlog != nil {
@@ -314,8 +303,6 @@ func newClientStream(ctx context.Context, desc *StreamDesc, cc *ClientConn, meth
 			}
 		}
 		cs.binlog.Log(logEntry)
-=======
->>>>>>> Add etcd storage
 	}
 
 	if desc != unaryStreamDesc {
@@ -388,7 +375,6 @@ type clientStream struct {
 	methodConfig *MethodConfig
 
 	ctx context.Context // the application's context, wrapped by stats/tracing
-<<<<<<< HEAD
 
 	retryThrottler *retryThrottler // The throttler active when the RPC began.
 
@@ -400,10 +386,6 @@ type clientStream struct {
 	// It's only read and used by Recv() and Header(), so it doesn't need to be
 	// synchronized.
 	serverHeaderBinlogged bool
-=======
-
-	retryThrottler *retryThrottler // The throttler active when the RPC began.
->>>>>>> Add etcd storage
 
 	mu                      sync.Mutex
 	firstAttempt            bool       // if true, transparent retry is valid
@@ -480,14 +462,7 @@ func (cs *clientStream) shouldRetry(err error) error {
 	pushback := 0
 	hasPushback := false
 	if cs.attempt.s != nil {
-<<<<<<< HEAD
 		if to, toErr := cs.attempt.s.TrailersOnly(); toErr != nil || !to {
-=======
-		if to, toErr := cs.attempt.s.TrailersOnly(); toErr != nil {
-			// Context error; stop now.
-			return toErr
-		} else if !to {
->>>>>>> Add etcd storage
 			return err
 		}
 
@@ -706,10 +681,7 @@ func (cs *clientStream) SendMsg(m interface{}) (err error) {
 	if len(payload) > *cs.callInfo.maxSendMessageSize {
 		return status.Errorf(codes.ResourceExhausted, "trying to send message larger than max (%d vs. %d)", len(payload), *cs.callInfo.maxSendMessageSize)
 	}
-<<<<<<< HEAD
 	msgBytes := data // Store the pointer before setting to nil. For binary logging.
-=======
->>>>>>> Add etcd storage
 	op := func(a *csAttempt) error {
 		err := a.sendMsg(m, hdr, payload, data)
 		// nil out the message and uncomp when replaying; they are only needed for
@@ -717,7 +689,6 @@ func (cs *clientStream) SendMsg(m interface{}) (err error) {
 		m, data = nil, nil
 		return err
 	}
-<<<<<<< HEAD
 	err = cs.withRetry(op, func() { cs.bufferForRetryLocked(len(hdr)+len(payload), op) })
 	if cs.binlog != nil && err == nil {
 		cs.binlog.Log(&binarylog.ClientMessage{
@@ -765,18 +736,6 @@ func (cs *clientStream) RecvMsg(m interface{}) error {
 			}
 			cs.binlog.Log(logEntry)
 		}
-=======
-	return cs.withRetry(op, func() { cs.bufferForRetryLocked(len(hdr)+len(payload), op) })
-}
-
-func (cs *clientStream) RecvMsg(m interface{}) error {
-	err := cs.withRetry(func(a *csAttempt) error {
-		return a.recvMsg(m)
-	}, cs.commitAttemptLocked)
-	if err != nil || !cs.desc.ServerStreams {
-		// err != nil or non-server-streaming indicates end of stream.
-		cs.finish(err)
->>>>>>> Add etcd storage
 	}
 	return err
 }
@@ -787,7 +746,6 @@ func (cs *clientStream) CloseSend() error {
 		return nil
 	}
 	cs.sentLast = true
-<<<<<<< HEAD
 	op := func(a *csAttempt) error {
 		a.t.Write(a.s, nil, nil, &transport.Options{Last: true})
 		// Always return nil; io.EOF is the only error that might make sense
@@ -802,10 +760,6 @@ func (cs *clientStream) CloseSend() error {
 			OnClientSide: true,
 		})
 	}
-=======
-	op := func(a *csAttempt) error { return a.t.Write(a.s, nil, nil, &transport.Options{Last: true}) }
-	cs.withRetry(op, func() { cs.bufferForRetryLocked(0, op) })
->>>>>>> Add etcd storage
 	// We never returned an error here for reasons.
 	return nil
 }
@@ -823,7 +777,6 @@ func (cs *clientStream) finish(err error) {
 	cs.finished = true
 	cs.commitAttemptLocked()
 	cs.mu.Unlock()
-<<<<<<< HEAD
 	// For binary logging. only log cancel in finish (could be caused by RPC ctx
 	// canceled or ClientConn closed). Trailer will be logged in RecvMsg.
 	//
@@ -834,8 +787,6 @@ func (cs *clientStream) finish(err error) {
 			OnClientSide: true,
 		})
 	}
-=======
->>>>>>> Add etcd storage
 	if err == nil {
 		cs.retryThrottler.successfulRPC()
 	}
@@ -887,16 +838,8 @@ func (a *csAttempt) sendMsg(m interface{}, hdr, payld, data []byte) error {
 
 func (a *csAttempt) recvMsg(m interface{}, payInfo *payloadInfo) (err error) {
 	cs := a.cs
-<<<<<<< HEAD
 	if a.statsHandler != nil && payInfo == nil {
 		payInfo = &payloadInfo{}
-=======
-	var inPayload *stats.InPayload
-	if a.statsHandler != nil {
-		inPayload = &stats.InPayload{
-			Client: true,
-		}
->>>>>>> Add etcd storage
 	}
 
 	if !a.decompSet {
@@ -915,11 +858,7 @@ func (a *csAttempt) recvMsg(m interface{}, payInfo *payloadInfo) (err error) {
 		// Only initialize this state once per stream.
 		a.decompSet = true
 	}
-<<<<<<< HEAD
 	err = recv(a.p, cs.codec, a.s, a.dc, m, *cs.callInfo.maxReceiveMessageSize, payInfo, a.decomp)
-=======
-	err = recv(a.p, cs.codec, a.s, a.dc, m, *cs.callInfo.maxReceiveMessageSize, inPayload, a.decomp)
->>>>>>> Add etcd storage
 	if err != nil {
 		if err == io.EOF {
 			if statusErr := a.s.Status().Err(); statusErr != nil {
@@ -936,7 +875,6 @@ func (a *csAttempt) recvMsg(m interface{}, payInfo *payloadInfo) (err error) {
 		}
 		a.mu.Unlock()
 	}
-<<<<<<< HEAD
 	if a.statsHandler != nil {
 		a.statsHandler.HandleRPC(cs.ctx, &stats.InPayload{
 			Client:   true,
@@ -946,10 +884,6 @@ func (a *csAttempt) recvMsg(m interface{}, payInfo *payloadInfo) (err error) {
 			Data:   payInfo.uncompressedBytes,
 			Length: len(payInfo.uncompressedBytes),
 		})
-=======
-	if inPayload != nil {
-		a.statsHandler.HandleRPC(cs.ctx, inPayload)
->>>>>>> Add etcd storage
 	}
 	if channelz.IsOn() {
 		a.t.IncrMsgRecv()
@@ -987,7 +921,6 @@ func (a *csAttempt) finish(err error) {
 
 	if a.done != nil {
 		br := false
-<<<<<<< HEAD
 		var tr metadata.MD
 		if a.s != nil {
 			br = a.s.BytesReceived()
@@ -996,13 +929,6 @@ func (a *csAttempt) finish(err error) {
 		a.done(balancer.DoneInfo{
 			Err:           err,
 			Trailer:       tr,
-=======
-		if a.s != nil {
-			br = a.s.BytesReceived()
-		}
-		a.done(balancer.DoneInfo{
-			Err:           err,
->>>>>>> Add etcd storage
 			BytesSent:     a.s != nil,
 			BytesReceived: br,
 		})
@@ -1029,7 +955,6 @@ func (a *csAttempt) finish(err error) {
 	a.mu.Unlock()
 }
 
-<<<<<<< HEAD
 func (ac *addrConn) newClientStream(ctx context.Context, desc *StreamDesc, method string, t transport.ClientTransport, opts ...CallOption) (_ ClientStream, err error) {
 	ac.mu.Lock()
 	if ac.transport != t {
@@ -1322,8 +1247,6 @@ func (as *addrConnStream) finish(err error) {
 	as.mu.Unlock()
 }
 
-=======
->>>>>>> Add etcd storage
 // ServerStream defines the server-side behavior of a streaming RPC.
 //
 // All errors returned from ServerStream methods are compatible with the

@@ -161,10 +161,6 @@ type callInfo struct {
 	creds                 credentials.PerRPCCredentials
 	contentSubtype        string
 	codec                 baseCodec
-<<<<<<< HEAD
-=======
-	disableRetry          bool
->>>>>>> Add etcd storage
 	maxRetryRPCBufferSize int
 }
 

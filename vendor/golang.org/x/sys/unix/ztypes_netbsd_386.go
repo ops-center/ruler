@@ -402,7 +402,6 @@ type Winsize struct {
 	Ypixel uint16
 }
 
-<<<<<<< HEAD
 type Ptmget struct {
 	Cfd int32
 	Sfd int32
@@ -410,8 +409,6 @@ type Ptmget struct {
 	Sn  [1024]byte
 }
 
-=======
->>>>>>> Add etcd storage
 const (
 	AT_FDCWD            = -0x64
 	AT_SYMLINK_NOFOLLOW = 0x200
@@ -456,7 +453,6 @@ type Utsname struct {
 	Version  [256]byte
 	Machine  [256]byte
 }
-<<<<<<< HEAD
 
 const SizeofClockinfo = 0x14
 
@@ -467,5 +463,3 @@ type Clockinfo struct {
 	Stathz  int32
 	Profhz  int32
 }
-=======
->>>>>>> Add etcd storage

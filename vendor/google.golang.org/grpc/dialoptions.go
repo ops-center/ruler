@@ -19,23 +19,14 @@
 package grpc
 
 import (
-<<<<<<< HEAD
 	"context"
-=======
->>>>>>> Add etcd storage
 	"fmt"
 	"net"
 	"time"
 
-<<<<<<< HEAD
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
-=======
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/balancer"
-	"google.golang.org/grpc/credentials"
->>>>>>> Add etcd storage
 	"google.golang.org/grpc/internal"
 	"google.golang.org/grpc/internal/backoff"
 	"google.golang.org/grpc/internal/envconfig"
@@ -65,19 +56,12 @@ type dialOptions struct {
 	balancerBuilder balancer.Builder
 	// This is to support grpclb.
 	resolverBuilder      resolver.Builder
-<<<<<<< HEAD
 	reqHandshake         envconfig.RequireHandshakeSetting
 	channelzParentID     int64
 	disableServiceConfig bool
 	disableRetry         bool
 	disableHealthCheck   bool
 	healthCheckFunc      internal.HealthChecker
-=======
-	waitForHandshake     bool
-	channelzParentID     int64
-	disableServiceConfig bool
-	disableRetry         bool
->>>>>>> Add etcd storage
 }
 
 // DialOption configures how we set up the connection.
@@ -110,7 +94,6 @@ func newFuncDialOption(f func(*dialOptions)) *funcDialOption {
 }
 
 // WithWaitForHandshake blocks until the initial settings frame is received from
-<<<<<<< HEAD
 // the server before assigning RPCs to the connection.
 //
 // Deprecated: this is the default behavior, and this option will be removed
@@ -118,12 +101,6 @@ func newFuncDialOption(f func(*dialOptions)) *funcDialOption {
 func WithWaitForHandshake() DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
 		o.reqHandshake = envconfig.RequireHandshakeOn
-=======
-// the server before assigning RPCs to the connection. Experimental API.
-func WithWaitForHandshake() DialOption {
-	return newFuncDialOption(func(o *dialOptions) {
-		o.waitForHandshake = true
->>>>>>> Add etcd storage
 	})
 }
 
@@ -188,11 +165,7 @@ func WithDefaultCallOptions(cos ...CallOption) DialOption {
 // WithCodec returns a DialOption which sets a codec for message marshaling and
 // unmarshaling.
 //
-<<<<<<< HEAD
 // Deprecated: use WithDefaultCallOptions(ForceCodec(_)) instead.
-=======
-// Deprecated: use WithDefaultCallOptions(CallCustomCodec(c)) instead.
->>>>>>> Add etcd storage
 func WithCodec(c Codec) DialOption {
 	return WithDefaultCallOptions(CallCustomCodec(c))
 }
@@ -319,12 +292,8 @@ func WithInsecure() DialOption {
 }
 
 // WithTransportCredentials returns a DialOption which configures a connection
-<<<<<<< HEAD
 // level security credentials (e.g., TLS/SSL). This should not be used together
 // with WithCredentialsBundle.
-=======
-// level security credentials (e.g., TLS/SSL).
->>>>>>> Add etcd storage
 func WithTransportCredentials(creds credentials.TransportCredentials) DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
 		o.copts.TransportCredentials = creds
@@ -339,7 +308,6 @@ func WithPerRPCCredentials(creds credentials.PerRPCCredentials) DialOption {
 	})
 }
 
-<<<<<<< HEAD
 // WithCredentialsBundle returns a DialOption to set a credentials bundle for
 // the ClientConn.WithCreds. This should not be used together with
 // WithTransportCredentials.
@@ -351,8 +319,6 @@ func WithCredentialsBundle(b credentials.Bundle) DialOption {
 	})
 }
 
-=======
->>>>>>> Add etcd storage
 // WithTimeout returns a DialOption that configures a timeout for dialing a
 // ClientConn initially. This is valid if and only if WithBlock() is present.
 //
@@ -363,35 +329,25 @@ func WithTimeout(d time.Duration) DialOption {
 	})
 }
 
-<<<<<<< HEAD
 // WithContextDialer returns a DialOption that sets a dialer to create
 // connections. If FailOnNonTempDialError() is set to true, and an error is
 // returned by f, gRPC checks the error's Temporary() method to decide if it
 // should try to reconnect to the network address.
 func WithContextDialer(f func(context.Context, string) (net.Conn, error)) DialOption {
-=======
-func withContextDialer(f func(context.Context, string) (net.Conn, error)) DialOption {
->>>>>>> Add etcd storage
 	return newFuncDialOption(func(o *dialOptions) {
 		o.copts.Dialer = f
 	})
 }
 
 func init() {
-<<<<<<< HEAD
 	internal.WithResolverBuilder = withResolverBuilder
 	internal.WithHealthCheckFunc = withHealthCheckFunc
-=======
-	internal.WithContextDialer = withContextDialer
-	internal.WithResolverBuilder = withResolverBuilder
->>>>>>> Add etcd storage
 }
 
 // WithDialer returns a DialOption that specifies a function to use for dialing
 // network addresses. If FailOnNonTempDialError() is set to true, and an error
 // is returned by f, gRPC checks the error's Temporary() method to decide if it
 // should try to reconnect to the network address.
-<<<<<<< HEAD
 //
 // Deprecated: use WithContextDialer instead
 func WithDialer(f func(string, time.Duration) (net.Conn, error)) DialOption {
@@ -399,13 +355,6 @@ func WithDialer(f func(string, time.Duration) (net.Conn, error)) DialOption {
 		func(ctx context.Context, addr string) (net.Conn, error) {
 			if deadline, ok := ctx.Deadline(); ok {
 				return f(addr, time.Until(deadline))
-=======
-func WithDialer(f func(string, time.Duration) (net.Conn, error)) DialOption {
-	return withContextDialer(
-		func(ctx context.Context, addr string) (net.Conn, error) {
-			if deadline, ok := ctx.Deadline(); ok {
-				return f(addr, deadline.Sub(time.Now()))
->>>>>>> Add etcd storage
 			}
 			return f(addr, 0)
 		})
@@ -424,12 +373,9 @@ func WithStatsHandler(h stats.Handler) DialOption {
 // error, gRPC will fail the connection to the network address and won't try to
 // reconnect. The default value of FailOnNonTempDialError is false.
 //
-<<<<<<< HEAD
 // FailOnNonTempDialError only affects the initial dial, and does not do
 // anything useful unless you are also using WithBlock().
 //
-=======
->>>>>>> Add etcd storage
 // This is an EXPERIMENTAL API.
 func FailOnNonTempDialError(f bool) DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
@@ -448,13 +394,10 @@ func WithUserAgent(s string) DialOption {
 // WithKeepaliveParams returns a DialOption that specifies keepalive parameters
 // for the client transport.
 func WithKeepaliveParams(kp keepalive.ClientParameters) DialOption {
-<<<<<<< HEAD
 	if kp.Time < internal.KeepaliveMinPingTime {
 		grpclog.Warningf("Adjusting keepalive ping interval to minimum period of %v", internal.KeepaliveMinPingTime)
 		kp.Time = internal.KeepaliveMinPingTime
 	}
-=======
->>>>>>> Add etcd storage
 	return newFuncDialOption(func(o *dialOptions) {
 		o.copts.KeepaliveParams = kp
 	})
@@ -527,7 +470,6 @@ func WithMaxHeaderListSize(s uint32) DialOption {
 	})
 }
 
-<<<<<<< HEAD
 // WithDisableHealthCheck disables the LB channel health checking for all SubConns of this ClientConn.
 //
 // This API is EXPERIMENTAL.
@@ -552,11 +494,6 @@ func defaultDialOptions() dialOptions {
 		disableRetry:    !envconfig.Retry,
 		reqHandshake:    envconfig.RequireHandshake,
 		healthCheckFunc: internal.HealthCheckFunc,
-=======
-func defaultDialOptions() dialOptions {
-	return dialOptions{
-		disableRetry: !envconfig.Retry,
->>>>>>> Add etcd storage
 		copts: transport.ConnectOptions{
 			WriteBufferSize: defaultWriteBufSize,
 			ReadBufferSize:  defaultReadBufSize,

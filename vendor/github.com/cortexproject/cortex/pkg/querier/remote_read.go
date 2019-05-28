@@ -100,7 +100,7 @@ func seriesSetToMatrix(s storage.SeriesSet) (model.Matrix, error) {
 			return nil, err
 		}
 		result = append(result, &model.SampleStream{
-			Metric: util.LabelsToMetric(series.Labels()),
+			Metric: labelsToMetric(series.Labels()),
 			Values: values,
 		})
 	}

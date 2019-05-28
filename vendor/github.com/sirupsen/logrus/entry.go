@@ -194,16 +194,8 @@ func (entry Entry) log(level Level, msg string) {
 
 	entry.Level = level
 	entry.Message = msg
-<<<<<<< HEAD
 	if entry.Logger.ReportCaller {
 		entry.Caller = getCaller()
-=======
-
-	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
-		entry.Logger.mu.Lock()
-		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
-		entry.Logger.mu.Unlock()
->>>>>>> Add etcd storage
 	}
 
 	entry.fireHooks()

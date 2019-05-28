@@ -497,7 +497,6 @@ type Utsname struct {
 	Version  [256]byte
 	Machine  [256]byte
 }
-<<<<<<< HEAD
 
 const SizeofClockinfo = 0x14
 
@@ -508,5 +507,3 @@ type Clockinfo struct {
 	Stathz  int32
 	Profhz  int32
 }
-=======
->>>>>>> Add etcd storage

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/prometheus/common/model"
-	"github.com/prometheus/prometheus/pkg/labels"
 )
 
 var (
@@ -30,17 +29,17 @@ var (
 // to write or read chunks from the external index.
 type Schema interface {
 	// When doing a write, use this method to return the list of entries you should write to.
-	GetWriteEntries(from, through model.Time, userID string, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error)
+	GetWriteEntries(from, through model.Time, userID string, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error)
 
 	// Should only be used with the seriesStore. TODO: Make seriesStore implement a different interface altogether.
-	GetLabelWriteEntries(from, through model.Time, userID string, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error)
-	GetChunkWriteEntries(from, through model.Time, userID string, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error)
-	GetLabelEntryCacheKeys(from, through model.Time, userID string, labels labels.Labels) []string
+	GetLabelWriteEntries(from, through model.Time, userID string, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error)
+	GetChunkWriteEntries(from, through model.Time, userID string, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error)
+	GetLabelEntryCacheKeys(from, through model.Time, userID string, labels model.Metric) []string
 
 	// When doing a read, use these methods to return the list of entries you should query
-	GetReadQueriesForMetric(from, through model.Time, userID string, metricName string) ([]IndexQuery, error)
-	GetReadQueriesForMetricLabel(from, through model.Time, userID string, metricName string, labelName string) ([]IndexQuery, error)
-	GetReadQueriesForMetricLabelValue(from, through model.Time, userID string, metricName string, labelName string, labelValue string) ([]IndexQuery, error)
+	GetReadQueriesForMetric(from, through model.Time, userID string, metricName model.LabelValue) ([]IndexQuery, error)
+	GetReadQueriesForMetricLabel(from, through model.Time, userID string, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error)
+	GetReadQueriesForMetricLabelValue(from, through model.Time, userID string, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error)
 
 	// If the query resulted in series IDs, use this method to find chunks.
 	GetChunksForSeries(from, through model.Time, userID string, seriesID []byte) ([]IndexQuery, error)
@@ -83,7 +82,7 @@ type schema struct {
 	entries entries
 }
 
-func (s schema) GetWriteEntries(from, through model.Time, userID string, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (s schema) GetWriteEntries(from, through model.Time, userID string, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	var result []IndexEntry
 
 	for _, bucket := range s.buckets(from, through, userID) {
@@ -96,7 +95,7 @@ func (s schema) GetWriteEntries(from, through model.Time, userID string, metricN
 	return result, nil
 }
 
-func (s schema) GetLabelWriteEntries(from, through model.Time, userID string, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (s schema) GetLabelWriteEntries(from, through model.Time, userID string, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	var result []IndexEntry
 
 	for _, bucket := range s.buckets(from, through, userID) {
@@ -109,7 +108,7 @@ func (s schema) GetLabelWriteEntries(from, through model.Time, userID string, me
 	return result, nil
 }
 
-func (s schema) GetChunkWriteEntries(from, through model.Time, userID string, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (s schema) GetChunkWriteEntries(from, through model.Time, userID string, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	var result []IndexEntry
 
 	for _, bucket := range s.buckets(from, through, userID) {
@@ -124,7 +123,7 @@ func (s schema) GetChunkWriteEntries(from, through model.Time, userID string, me
 }
 
 // Should only used for v9Schema
-func (s schema) GetLabelEntryCacheKeys(from, through model.Time, userID string, labels labels.Labels) []string {
+func (s schema) GetLabelEntryCacheKeys(from, through model.Time, userID string, labels model.Metric) []string {
 	var result []string
 	for _, bucket := range s.buckets(from, through, userID) {
 		key := strings.Join([]string{
@@ -141,7 +140,7 @@ func (s schema) GetLabelEntryCacheKeys(from, through model.Time, userID string, 
 	return result
 }
 
-func (s schema) GetReadQueriesForMetric(from, through model.Time, userID string, metricName string) ([]IndexQuery, error) {
+func (s schema) GetReadQueriesForMetric(from, through model.Time, userID string, metricName model.LabelValue) ([]IndexQuery, error) {
 	var result []IndexQuery
 
 	buckets := s.buckets(from, through, userID)
@@ -155,7 +154,7 @@ func (s schema) GetReadQueriesForMetric(from, through model.Time, userID string,
 	return result, nil
 }
 
-func (s schema) GetReadQueriesForMetricLabel(from, through model.Time, userID string, metricName string, labelName string) ([]IndexQuery, error) {
+func (s schema) GetReadQueriesForMetricLabel(from, through model.Time, userID string, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error) {
 	var result []IndexQuery
 
 	buckets := s.buckets(from, through, userID)
@@ -169,7 +168,7 @@ func (s schema) GetReadQueriesForMetricLabel(from, through model.Time, userID st
 	return result, nil
 }
 
-func (s schema) GetReadQueriesForMetricLabelValue(from, through model.Time, userID string, metricName string, labelName string, labelValue string) ([]IndexQuery, error) {
+func (s schema) GetReadQueriesForMetricLabelValue(from, through model.Time, userID string, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error) {
 	var result []IndexQuery
 
 	buckets := s.buckets(from, through, userID)
@@ -198,13 +197,13 @@ func (s schema) GetChunksForSeries(from, through model.Time, userID string, seri
 }
 
 type entries interface {
-	GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error)
-	GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error)
-	GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error)
+	GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error)
+	GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error)
+	GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error)
 
-	GetReadMetricQueries(bucket Bucket, metricName string) ([]IndexQuery, error)
-	GetReadMetricLabelQueries(bucket Bucket, metricName string, labelName string) ([]IndexQuery, error)
-	GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, labelValue string) ([]IndexQuery, error)
+	GetReadMetricQueries(bucket Bucket, metricName model.LabelValue) ([]IndexQuery, error)
+	GetReadMetricLabelQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error)
+	GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error)
 	GetChunksForSeries(bucket Bucket, seriesID []byte) ([]IndexQuery, error)
 }
 
@@ -214,60 +213,60 @@ type entries interface {
 
 type originalEntries struct{}
 
-func (originalEntries) GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (originalEntries) GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	chunkIDBytes := []byte(chunkID)
 	result := []IndexEntry{}
-	for _, v := range labels {
-		if v.Name == model.MetricNameLabel {
+	for key, value := range labels {
+		if key == model.MetricNameLabel {
 			continue
 		}
-		if strings.ContainsRune(string(v.Value), '\x00') {
+		if strings.ContainsRune(string(value), '\x00') {
 			return nil, fmt.Errorf("label values cannot contain null byte")
 		}
 		result = append(result, IndexEntry{
 			TableName:  bucket.tableName,
-			HashValue:  bucket.hashKey + ":" + metricName,
-			RangeValue: encodeRangeKey([]byte(v.Name), []byte(v.Value), chunkIDBytes),
+			HashValue:  bucket.hashKey + ":" + string(metricName),
+			RangeValue: encodeRangeKey([]byte(key), []byte(value), chunkIDBytes),
 		})
 	}
 	return result, nil
 }
 
-func (originalEntries) GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (originalEntries) GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
-func (originalEntries) GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (originalEntries) GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
 
-func (originalEntries) GetReadMetricQueries(bucket Bucket, metricName string) ([]IndexQuery, error) {
+func (originalEntries) GetReadMetricQueries(bucket Bucket, metricName model.LabelValue) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName:        bucket.tableName,
-			HashValue:        bucket.hashKey + ":" + metricName,
+			HashValue:        bucket.hashKey + ":" + string(metricName),
 			RangeValuePrefix: nil,
 		},
 	}, nil
 }
 
-func (originalEntries) GetReadMetricLabelQueries(bucket Bucket, metricName string, labelName string) ([]IndexQuery, error) {
+func (originalEntries) GetReadMetricLabelQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName:        bucket.tableName,
-			HashValue:        bucket.hashKey + ":" + metricName,
+			HashValue:        bucket.hashKey + ":" + string(metricName),
 			RangeValuePrefix: encodeRangeKey([]byte(labelName)),
 		},
 	}, nil
 }
 
-func (originalEntries) GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, labelValue string) ([]IndexQuery, error) {
+func (originalEntries) GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error) {
 	if strings.ContainsRune(string(labelValue), '\x00') {
 		return nil, fmt.Errorf("label values cannot contain null byte")
 	}
 	return []IndexQuery{
 		{
 			TableName:        bucket.tableName,
-			HashValue:        bucket.hashKey + ":" + metricName,
+			HashValue:        bucket.hashKey + ":" + string(metricName),
 			RangeValuePrefix: encodeRangeKey([]byte(labelName), []byte(labelValue)),
 		},
 	}, nil
@@ -284,37 +283,37 @@ type base64Entries struct {
 	originalEntries
 }
 
-func (base64Entries) GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (base64Entries) GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	chunkIDBytes := []byte(chunkID)
 	result := []IndexEntry{}
-	for _, v := range labels {
-		if v.Name == model.MetricNameLabel {
+	for key, value := range labels {
+		if key == model.MetricNameLabel {
 			continue
 		}
 
-		encodedBytes := encodeBase64Value(v.Value)
+		encodedBytes := encodeBase64Value(value)
 		result = append(result, IndexEntry{
 			TableName:  bucket.tableName,
-			HashValue:  bucket.hashKey + ":" + metricName,
-			RangeValue: encodeRangeKey([]byte(v.Name), encodedBytes, chunkIDBytes, chunkTimeRangeKeyV1),
+			HashValue:  bucket.hashKey + ":" + string(metricName),
+			RangeValue: encodeRangeKey([]byte(key), encodedBytes, chunkIDBytes, chunkTimeRangeKeyV1),
 		})
 	}
 	return result, nil
 }
 
-func (base64Entries) GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (base64Entries) GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
-func (base64Entries) GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (base64Entries) GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
 
-func (base64Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, labelValue string) ([]IndexQuery, error) {
+func (base64Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error) {
 	encodedBytes := encodeBase64Value(labelValue)
 	return []IndexQuery{
 		{
 			TableName:        bucket.tableName,
-			HashValue:        bucket.hashKey + ":" + metricName,
+			HashValue:        bucket.hashKey + ":" + string(metricName),
 			RangeValuePrefix: encodeRangeKey([]byte(labelName), encodedBytes),
 		},
 	}, nil
@@ -327,24 +326,24 @@ func (base64Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName st
 //    - range key: \0\0<chunk name>\0<version 3>
 type labelNameInHashKeyEntries struct{}
 
-func (labelNameInHashKeyEntries) GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (labelNameInHashKeyEntries) GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	chunkIDBytes := []byte(chunkID)
 	entries := []IndexEntry{
 		{
 			TableName:  bucket.tableName,
-			HashValue:  bucket.hashKey + ":" + metricName,
+			HashValue:  bucket.hashKey + ":" + string(metricName),
 			RangeValue: encodeRangeKey(nil, nil, chunkIDBytes, chunkTimeRangeKeyV2),
 		},
 	}
 
-	for _, v := range labels {
-		if v.Name == model.MetricNameLabel {
+	for key, value := range labels {
+		if key == model.MetricNameLabel {
 			continue
 		}
-		encodedBytes := encodeBase64Value(v.Value)
+		encodedBytes := encodeBase64Value(value)
 		entries = append(entries, IndexEntry{
 			TableName:  bucket.tableName,
-			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, v.Name),
+			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, key),
 			RangeValue: encodeRangeKey(nil, encodedBytes, chunkIDBytes, chunkTimeRangeKeyV1),
 		})
 	}
@@ -352,23 +351,23 @@ func (labelNameInHashKeyEntries) GetWriteEntries(bucket Bucket, metricName strin
 	return entries, nil
 }
 
-func (labelNameInHashKeyEntries) GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (labelNameInHashKeyEntries) GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
-func (labelNameInHashKeyEntries) GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (labelNameInHashKeyEntries) GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
 
-func (labelNameInHashKeyEntries) GetReadMetricQueries(bucket Bucket, metricName string) ([]IndexQuery, error) {
+func (labelNameInHashKeyEntries) GetReadMetricQueries(bucket Bucket, metricName model.LabelValue) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName: bucket.tableName,
-			HashValue: bucket.hashKey + ":" + metricName,
+			HashValue: bucket.hashKey + ":" + string(metricName),
 		},
 	}, nil
 }
 
-func (labelNameInHashKeyEntries) GetReadMetricLabelQueries(bucket Bucket, metricName string, labelName string) ([]IndexQuery, error) {
+func (labelNameInHashKeyEntries) GetReadMetricLabelQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName: bucket.tableName,
@@ -377,7 +376,7 @@ func (labelNameInHashKeyEntries) GetReadMetricLabelQueries(bucket Bucket, metric
 	}, nil
 }
 
-func (labelNameInHashKeyEntries) GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, labelValue string) ([]IndexQuery, error) {
+func (labelNameInHashKeyEntries) GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error) {
 	encodedBytes := encodeBase64Value(labelValue)
 	return []IndexQuery{
 		{
@@ -397,26 +396,26 @@ func (labelNameInHashKeyEntries) GetChunksForSeries(_ Bucket, _ []byte) ([]Index
 // so the chunk end times are ignored.
 type v5Entries struct{}
 
-func (v5Entries) GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v5Entries) GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	chunkIDBytes := []byte(chunkID)
 	encodedThroughBytes := encodeTime(bucket.through)
 
 	entries := []IndexEntry{
 		{
 			TableName:  bucket.tableName,
-			HashValue:  bucket.hashKey + ":" + metricName,
+			HashValue:  bucket.hashKey + ":" + string(metricName),
 			RangeValue: encodeRangeKey(encodedThroughBytes, nil, chunkIDBytes, chunkTimeRangeKeyV3),
 		},
 	}
 
-	for _, v := range labels {
-		if v.Name == model.MetricNameLabel {
+	for key, value := range labels {
+		if key == model.MetricNameLabel {
 			continue
 		}
-		encodedValueBytes := encodeBase64Value(v.Value)
+		encodedValueBytes := encodeBase64Value(value)
 		entries = append(entries, IndexEntry{
 			TableName:  bucket.tableName,
-			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, v.Name),
+			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, key),
 			RangeValue: encodeRangeKey(encodedThroughBytes, encodedValueBytes, chunkIDBytes, chunkTimeRangeKeyV4),
 		})
 	}
@@ -424,23 +423,23 @@ func (v5Entries) GetWriteEntries(bucket Bucket, metricName string, labels labels
 	return entries, nil
 }
 
-func (v5Entries) GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v5Entries) GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
-func (v5Entries) GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v5Entries) GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
 
-func (v5Entries) GetReadMetricQueries(bucket Bucket, metricName string) ([]IndexQuery, error) {
+func (v5Entries) GetReadMetricQueries(bucket Bucket, metricName model.LabelValue) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName: bucket.tableName,
-			HashValue: bucket.hashKey + ":" + metricName,
+			HashValue: bucket.hashKey + ":" + string(metricName),
 		},
 	}, nil
 }
 
-func (v5Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, labelName string) ([]IndexQuery, error) {
+func (v5Entries) GetReadMetricLabelQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName: bucket.tableName,
@@ -449,7 +448,7 @@ func (v5Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, lab
 	}, nil
 }
 
-func (v5Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, _ string) ([]IndexQuery, error) {
+func (v5Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, _ model.LabelValue) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName: bucket.tableName,
@@ -466,52 +465,52 @@ func (v5Entries) GetChunksForSeries(_ Bucket, _ []byte) ([]IndexQuery, error) {
 // moves label value out of range key (see #199).
 type v6Entries struct{}
 
-func (v6Entries) GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v6Entries) GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	chunkIDBytes := []byte(chunkID)
 	encodedThroughBytes := encodeTime(bucket.through)
 
 	entries := []IndexEntry{
 		{
 			TableName:  bucket.tableName,
-			HashValue:  bucket.hashKey + ":" + metricName,
+			HashValue:  bucket.hashKey + ":" + string(metricName),
 			RangeValue: encodeRangeKey(encodedThroughBytes, nil, chunkIDBytes, chunkTimeRangeKeyV3),
 		},
 	}
 
-	for _, v := range labels {
-		if v.Name == model.MetricNameLabel {
+	for key, value := range labels {
+		if key == model.MetricNameLabel {
 			continue
 		}
 		entries = append(entries, IndexEntry{
 			TableName:  bucket.tableName,
-			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, v.Name),
+			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, key),
 			RangeValue: encodeRangeKey(encodedThroughBytes, nil, chunkIDBytes, chunkTimeRangeKeyV5),
-			Value:      []byte(v.Value),
+			Value:      []byte(value),
 		})
 	}
 
 	return entries, nil
 }
 
-func (v6Entries) GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v6Entries) GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
-func (v6Entries) GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v6Entries) GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
 
-func (v6Entries) GetReadMetricQueries(bucket Bucket, metricName string) ([]IndexQuery, error) {
+func (v6Entries) GetReadMetricQueries(bucket Bucket, metricName model.LabelValue) ([]IndexQuery, error) {
 	encodedFromBytes := encodeTime(bucket.from)
 	return []IndexQuery{
 		{
 			TableName:       bucket.tableName,
-			HashValue:       bucket.hashKey + ":" + metricName,
+			HashValue:       bucket.hashKey + ":" + string(metricName),
 			RangeValueStart: encodeRangeKey(encodedFromBytes),
 		},
 	}, nil
 }
 
-func (v6Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, labelName string) ([]IndexQuery, error) {
+func (v6Entries) GetReadMetricLabelQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error) {
 	encodedFromBytes := encodeTime(bucket.from)
 	return []IndexQuery{
 		{
@@ -522,7 +521,7 @@ func (v6Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, lab
 	}, nil
 }
 
-func (v6Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, labelValue string) ([]IndexQuery, error) {
+func (v6Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error) {
 	encodedFromBytes := encodeTime(bucket.from)
 	return []IndexQuery{
 		{
@@ -542,41 +541,41 @@ func (v6Entries) GetChunksForSeries(_ Bucket, _ []byte) ([]IndexQuery, error) {
 type v9Entries struct {
 }
 
-func (v9Entries) GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v9Entries) GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
 
-func (v9Entries) GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v9Entries) GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	seriesID := sha256bytes(labels.String())
 
 	entries := []IndexEntry{
 		// Entry for metricName -> seriesID
 		{
 			TableName:  bucket.tableName,
-			HashValue:  bucket.hashKey + ":" + metricName,
+			HashValue:  bucket.hashKey + ":" + string(metricName),
 			RangeValue: encodeRangeKey(seriesID, nil, nil, seriesRangeKeyV1),
 		},
 	}
 
 	// Entries for metricName:labelName -> hash(value):seriesID
 	// We use a hash of the value to limit its length.
-	for _, v := range labels {
-		if v.Name == model.MetricNameLabel {
+	for key, value := range labels {
+		if key == model.MetricNameLabel {
 			continue
 		}
-		valueHash := sha256bytes(v.Value)
+		valueHash := sha256bytes(string(value))
 		entries = append(entries, IndexEntry{
 			TableName:  bucket.tableName,
-			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, v.Name),
+			HashValue:  fmt.Sprintf("%s:%s:%s", bucket.hashKey, metricName, key),
 			RangeValue: encodeRangeKey(valueHash, seriesID, nil, labelSeriesRangeKeyV1),
-			Value:      []byte(v.Value),
+			Value:      []byte(value),
 		})
 	}
 
 	return entries, nil
 }
 
-func (v9Entries) GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v9Entries) GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	seriesID := sha256bytes(labels.String())
 	encodedThroughBytes := encodeTime(bucket.through)
 
@@ -592,16 +591,16 @@ func (v9Entries) GetChunkWriteEntries(bucket Bucket, metricName string, labels l
 	return entries, nil
 }
 
-func (v9Entries) GetReadMetricQueries(bucket Bucket, metricName string) ([]IndexQuery, error) {
+func (v9Entries) GetReadMetricQueries(bucket Bucket, metricName model.LabelValue) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName: bucket.tableName,
-			HashValue: bucket.hashKey + ":" + metricName,
+			HashValue: bucket.hashKey + ":" + string(metricName),
 		},
 	}, nil
 }
 
-func (v9Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, labelName string) ([]IndexQuery, error) {
+func (v9Entries) GetReadMetricLabelQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error) {
 	return []IndexQuery{
 		{
 			TableName: bucket.tableName,
@@ -610,8 +609,8 @@ func (v9Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, lab
 	}, nil
 }
 
-func (v9Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, labelValue string) ([]IndexQuery, error) {
-	valueHash := sha256bytes(labelValue)
+func (v9Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error) {
+	valueHash := sha256bytes(string(labelValue))
 	return []IndexQuery{
 		{
 			TableName:       bucket.tableName,
@@ -638,11 +637,11 @@ type v10Entries struct {
 	rowShards uint32
 }
 
-func (v10Entries) GetWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v10Entries) GetWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	return nil, ErrNotSupported
 }
 
-func (s v10Entries) GetLabelWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (s v10Entries) GetLabelWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	seriesID := sha256bytes(labels.String())
 
 	// read first 32 bits of the hash and use this to calculate the shard
@@ -652,30 +651,30 @@ func (s v10Entries) GetLabelWriteEntries(bucket Bucket, metricName string, label
 		// Entry for metricName -> seriesID
 		{
 			TableName:  bucket.tableName,
-			HashValue:  fmt.Sprintf("%02d:%s:%s", shard, bucket.hashKey, metricName),
+			HashValue:  fmt.Sprintf("%02d:%s:%s", shard, bucket.hashKey, string(metricName)),
 			RangeValue: encodeRangeKey(seriesID, nil, nil, seriesRangeKeyV1),
 		},
 	}
 
 	// Entries for metricName:labelName -> hash(value):seriesID
 	// We use a hash of the value to limit its length.
-	for _, v := range labels {
-		if v.Name == model.MetricNameLabel {
+	for key, value := range labels {
+		if key == model.MetricNameLabel {
 			continue
 		}
-		valueHash := sha256bytes(v.Value)
+		valueHash := sha256bytes(string(value))
 		entries = append(entries, IndexEntry{
 			TableName:  bucket.tableName,
-			HashValue:  fmt.Sprintf("%02d:%s:%s:%s", shard, bucket.hashKey, metricName, v.Name),
+			HashValue:  fmt.Sprintf("%02d:%s:%s:%s", shard, bucket.hashKey, metricName, key),
 			RangeValue: encodeRangeKey(valueHash, seriesID, nil, labelSeriesRangeKeyV1),
-			Value:      []byte(v.Value),
+			Value:      []byte(value),
 		})
 	}
 
 	return entries, nil
 }
 
-func (v10Entries) GetChunkWriteEntries(bucket Bucket, metricName string, labels labels.Labels, chunkID string) ([]IndexEntry, error) {
+func (v10Entries) GetChunkWriteEntries(bucket Bucket, metricName model.LabelValue, labels model.Metric, chunkID string) ([]IndexEntry, error) {
 	seriesID := sha256bytes(labels.String())
 	encodedThroughBytes := encodeTime(bucket.through)
 
@@ -691,18 +690,18 @@ func (v10Entries) GetChunkWriteEntries(bucket Bucket, metricName string, labels 
 	return entries, nil
 }
 
-func (s v10Entries) GetReadMetricQueries(bucket Bucket, metricName string) ([]IndexQuery, error) {
+func (s v10Entries) GetReadMetricQueries(bucket Bucket, metricName model.LabelValue) ([]IndexQuery, error) {
 	result := make([]IndexQuery, 0, s.rowShards)
 	for i := uint32(0); i < s.rowShards; i++ {
 		result = append(result, IndexQuery{
 			TableName: bucket.tableName,
-			HashValue: fmt.Sprintf("%02d:%s:%s", i, bucket.hashKey, metricName),
+			HashValue: fmt.Sprintf("%02d:%s:%s", i, bucket.hashKey, string(metricName)),
 		})
 	}
 	return result, nil
 }
 
-func (s v10Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, labelName string) ([]IndexQuery, error) {
+func (s v10Entries) GetReadMetricLabelQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName) ([]IndexQuery, error) {
 	result := make([]IndexQuery, 0, s.rowShards)
 	for i := uint32(0); i < s.rowShards; i++ {
 		result = append(result, IndexQuery{
@@ -713,8 +712,8 @@ func (s v10Entries) GetReadMetricLabelQueries(bucket Bucket, metricName string, 
 	return result, nil
 }
 
-func (s v10Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName string, labelName string, labelValue string) ([]IndexQuery, error) {
-	valueHash := sha256bytes(labelValue)
+func (s v10Entries) GetReadMetricLabelValueQueries(bucket Bucket, metricName model.LabelValue, labelName model.LabelName, labelValue model.LabelValue) ([]IndexQuery, error) {
+	valueHash := sha256bytes(string(labelValue))
 	result := make([]IndexQuery, 0, s.rowShards)
 	for i := uint32(0); i < s.rowShards; i++ {
 		result = append(result, IndexQuery{

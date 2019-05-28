@@ -284,9 +284,6 @@ const (
 	SYS_PKEY_FREE              = 290
 	SYS_STATX                  = 291
 	SYS_IO_PGETEVENTS          = 292
-<<<<<<< HEAD
 	SYS_RSEQ                   = 293
 	SYS_KEXEC_FILE_LOAD        = 294
-=======
->>>>>>> Add etcd storage
 )

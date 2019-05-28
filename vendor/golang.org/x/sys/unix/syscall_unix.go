@@ -8,10 +8,6 @@ package unix
 
 import (
 	"bytes"
-<<<<<<< HEAD
-=======
-	"runtime"
->>>>>>> Add etcd storage
 	"sort"
 	"sync"
 	"syscall"
@@ -75,7 +71,6 @@ func SignalName(s syscall.Signal) string {
 	return ""
 }
 
-<<<<<<< HEAD
 // SignalNum returns the syscall.Signal for signal named s,
 // or 0 if a signal with such name is not found.
 // The signal name should start with "SIG".
@@ -89,8 +84,6 @@ func SignalNum(s string) syscall.Signal {
 	return signalNameMap[s]
 }
 
-=======
->>>>>>> Add etcd storage
 // clen returns the index of the first NULL byte in n or len(n) if n contains no NULL byte.
 func clen(n []byte) int {
 	i := bytes.IndexByte(n, 0)
@@ -301,7 +294,6 @@ func GetsockoptTimeval(fd, level, opt int) (*Timeval, error) {
 	return &tv, err
 }
 
-<<<<<<< HEAD
 func GetsockoptUint64(fd, level, opt int) (value uint64, err error) {
 	var n uint64
 	vallen := _Socklen(8)
@@ -309,8 +301,6 @@ func GetsockoptUint64(fd, level, opt int) (value uint64, err error) {
 	return n, err
 }
 
-=======
->>>>>>> Add etcd storage
 func Recvfrom(fd int, p []byte, flags int) (n int, from Sockaddr, err error) {
 	var rsa RawSockaddrAny
 	var len _Socklen = SizeofSockaddrAny
@@ -420,7 +410,6 @@ func SetNonblock(fd int, nonblocking bool) (err error) {
 func Exec(argv0 string, argv []string, envv []string) error {
 	return syscall.Exec(argv0, argv, envv)
 }
-<<<<<<< HEAD
 
 // Lutimes sets the access and modification times tv on path. If path refers to
 // a symlink, it is not dereferenced and the timestamps are set on the symlink.
@@ -440,5 +429,3 @@ func Lutimes(path string, tv []Timeval) error {
 	}
 	return UtimesNanoAt(AT_FDCWD, path, ts, AT_SYMLINK_NOFOLLOW)
 }
-=======
->>>>>>> Add etcd storage

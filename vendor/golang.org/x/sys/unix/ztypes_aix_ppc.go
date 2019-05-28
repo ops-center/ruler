@@ -6,19 +6,11 @@
 package unix
 
 const (
-<<<<<<< HEAD
 	SizeofPtr      = 0x4
 	SizeofShort    = 0x2
 	SizeofInt      = 0x4
 	SizeofLong     = 0x4
 	SizeofLongLong = 0x8
-=======
-	sizeofPtr      = 0x4
-	sizeofShort    = 0x2
-	sizeofInt      = 0x4
-	sizeofLong     = 0x4
-	sizeofLongLong = 0x8
->>>>>>> Add etcd storage
 	PathMax        = 0x3ff
 )
 
@@ -276,7 +268,6 @@ type Termios struct {
 	Cc    [16]uint8
 }
 
-<<<<<<< HEAD
 type Termio struct {
 	Iflag uint16
 	Oflag uint16
@@ -293,11 +284,6 @@ type Winsize struct {
 	Xpixel uint16
 	Ypixel uint16
 }
-=======
-type Termio struct{}
-
-type Winsize struct{}
->>>>>>> Add etcd storage
 
 type PollFd struct {
 	Fd      int32
@@ -328,7 +314,6 @@ type Flock_t struct {
 	Len    int64
 }
 
-<<<<<<< HEAD
 type Fsid_t struct {
 	Val [2]uint32
 }
@@ -356,8 +341,5 @@ type Statfs_t struct {
 	Fpack     [32]uint8
 	Name_max  int32
 }
-=======
-type Statfs_t struct{}
->>>>>>> Add etcd storage
 
 const RNDGETENTCNT = 0x80045200

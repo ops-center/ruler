@@ -149,11 +149,7 @@ const (
 	DOMAIN_ALIAS_RID_REMOTE_DESKTOP_USERS           = 0x22b
 	DOMAIN_ALIAS_RID_NETWORK_CONFIGURATION_OPS      = 0x22c
 	DOMAIN_ALIAS_RID_INCOMING_FOREST_TRUST_BUILDERS = 0x22d
-<<<<<<< HEAD
 	DOMAIN_ALIAS_RID_MONITORING_USERS               = 0x22e
-=======
-	DOMAIN_ALIAS_RID_MONITORING_USERS               = 0X22e
->>>>>>> Add etcd storage
 	DOMAIN_ALIAS_RID_LOGGING_USERS                  = 0x22f
 	DOMAIN_ALIAS_RID_AUTHORIZATIONACCESS            = 0x230
 	DOMAIN_ALIAS_RID_TS_LICENSE_SERVERS             = 0x231
@@ -626,7 +622,6 @@ func (t Token) GetUserProfileDirectory() (string, error) {
 	}
 }
 
-<<<<<<< HEAD
 // GetSystemDirectory retrieves path to current location of the system
 // directory, which is typically, though not always, C:\Windows\System32.
 func GetSystemDirectory() (string, error) {
@@ -644,8 +639,6 @@ func GetSystemDirectory() (string, error) {
 	}
 }
 
-=======
->>>>>>> Add etcd storage
 // IsMember reports whether the access token t is a member of the provided SID.
 func (t Token) IsMember(sid *SID) (bool, error) {
 	var b int32

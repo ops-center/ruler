@@ -22,14 +22,11 @@ package unix
 #include <utime.h>
 #include <sys/utsname.h>
 #include <sys/poll.h>
-<<<<<<< HEAD
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
 #include <sys/termio.h>
 #include <sys/ioctl.h>
-=======
->>>>>>> Add etcd storage
 
 #include <termios.h>
 
@@ -41,10 +38,6 @@ package unix
 
 #include <dirent.h>
 #include <fcntl.h>
-<<<<<<< HEAD
-=======
-#include <gcrypt.h>
->>>>>>> Add etcd storage
 
 enum {
 	sizeofPtr = sizeof(void*),
@@ -66,7 +59,6 @@ struct sockaddr_any {
 */
 import "C"
 
-<<<<<<< HEAD
 // Machine characteristics
 
 const (
@@ -75,16 +67,6 @@ const (
 	SizeofInt      = C.sizeof_int
 	SizeofLong     = C.sizeof_long
 	SizeofLongLong = C.sizeof_longlong
-=======
-// Machine characteristics; for internal use.
-
-const (
-	sizeofPtr      = C.sizeofPtr
-	sizeofShort    = C.sizeof_short
-	sizeofInt      = C.sizeof_int
-	sizeofLong     = C.sizeof_long
-	sizeofLongLong = C.sizeof_longlong
->>>>>>> Add etcd storage
 	PathMax        = C.PATH_MAX
 )
 
@@ -246,12 +228,9 @@ type Flock_t C.struct_flock64
 
 // Statfs
 
-<<<<<<< HEAD
 type Fsid_t C.struct_fsid_t
 type Fsid64_t C.struct_fsid64_t
 
-=======
->>>>>>> Add etcd storage
 type Statfs_t C.struct_statfs
 
 const RNDGETENTCNT = 0x80045200

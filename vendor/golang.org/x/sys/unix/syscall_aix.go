@@ -13,14 +13,7 @@
 
 package unix
 
-<<<<<<< HEAD
 import "unsafe"
-=======
-import (
-	"syscall"
-	"unsafe"
-)
->>>>>>> Add etcd storage
 
 /*
  * Wrapped
@@ -234,11 +227,7 @@ func anyToSockaddr(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
 
 		// Some versions of AIX have a bug in getsockname (see IV78655).
 		// We can't rely on sa.Len being set correctly.
-<<<<<<< HEAD
 		n := SizeofSockaddrUnix - 3 // subtract leading Family, Len, terminating NUL.
-=======
-		n := SizeofSockaddrUnix - 3 // substract leading Family, Len, terminating NUL.
->>>>>>> Add etcd storage
 		for i := 0; i < n; i++ {
 			if pp.Path[i] == 0 {
 				n = i
@@ -279,7 +268,6 @@ func Gettimeofday(tv *Timeval) (err error) {
 	return
 }
 
-<<<<<<< HEAD
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
@@ -287,8 +275,6 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 	return sendfile(outfd, infd, offset, count)
 }
 
-=======
->>>>>>> Add etcd storage
 // TODO
 func sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	return -1, ENOSYS
@@ -323,19 +309,11 @@ func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int,
 type WaitStatus uint32
 
 func (w WaitStatus) Stopped() bool { return w&0x40 != 0 }
-<<<<<<< HEAD
 func (w WaitStatus) StopSignal() Signal {
 	if !w.Stopped() {
 		return -1
 	}
 	return Signal(w>>8) & 0xFF
-=======
-func (w WaitStatus) StopSignal() syscall.Signal {
-	if !w.Stopped() {
-		return -1
-	}
-	return syscall.Signal(w>>8) & 0xFF
->>>>>>> Add etcd storage
 }
 
 func (w WaitStatus) Exited() bool { return w&0xFF == 0 }
@@ -347,19 +325,11 @@ func (w WaitStatus) ExitStatus() int {
 }
 
 func (w WaitStatus) Signaled() bool { return w&0x40 == 0 && w&0xFF != 0 }
-<<<<<<< HEAD
 func (w WaitStatus) Signal() Signal {
 	if !w.Signaled() {
 		return -1
 	}
 	return Signal(w>>16) & 0xFF
-=======
-func (w WaitStatus) Signal() syscall.Signal {
-	if !w.Signaled() {
-		return -1
-	}
-	return syscall.Signal(w>>16) & 0xFF
->>>>>>> Add etcd storage
 }
 
 func (w WaitStatus) Continued() bool { return w&0x01000000 != 0 }
@@ -379,19 +349,11 @@ func IoctlSetInt(fd int, req uint, value int) error {
 	return ioctl(fd, req, uintptr(value))
 }
 
-<<<<<<< HEAD
 func ioctlSetWinsize(fd int, req uint, value *Winsize) error {
 	return ioctl(fd, req, uintptr(unsafe.Pointer(value)))
 }
 
 func ioctlSetTermios(fd int, req uint, value *Termios) error {
-=======
-func IoctlSetWinsize(fd int, req uint, value *Winsize) error {
-	return ioctl(fd, req, uintptr(unsafe.Pointer(value)))
-}
-
-func IoctlSetTermios(fd int, req uint, value *Termios) error {
->>>>>>> Add etcd storage
 	return ioctl(fd, req, uintptr(unsafe.Pointer(value)))
 }
 
@@ -425,13 +387,7 @@ func IoctlGetTermios(fd int, req uint) (*Termios, error) {
 // FcntlFlock performs a fcntl syscall for the F_GETLK, F_SETLK or F_SETLKW command.
 //sys	FcntlFlock(fd uintptr, cmd int, lk *Flock_t) (err error) = fcntl
 
-<<<<<<< HEAD
 //sys	fcntl(fd int, cmd int, arg int) (val int, err error)
-=======
-func Flock(fd int, how int) (err error) {
-	return syscall.Flock(fd, how)
-}
->>>>>>> Add etcd storage
 
 /*
  * Direct access
@@ -442,23 +398,12 @@ func Flock(fd int, how int) (err error) {
 //sys	Chroot(path string) (err error)
 //sys	Close(fd int) (err error)
 //sys	Dup(oldfd int) (fd int, err error)
-<<<<<<< HEAD
 //sys	Exit(code int)
 //sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
-=======
-//sys	Dup3(oldfd int, newfd int, flags int) (err error)
-//sys	Exit(code int)
-//sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
-//sys	Fallocate(fd int, mode uint32, off int64, len int64) (err error)
->>>>>>> Add etcd storage
 //sys	Fchdir(fd int) (err error)
 //sys	Fchmod(fd int, mode uint32) (err error)
 //sys	Fchmodat(dirfd int, path string, mode uint32, flags int) (err error)
 //sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
-<<<<<<< HEAD
-=======
-//sys	fcntl(fd int, cmd int, arg int) (val int, err error)
->>>>>>> Add etcd storage
 //sys	Fdatasync(fd int) (err error)
 //sys	Fsync(fd int) (err error)
 // readdir_r
@@ -471,29 +416,18 @@ func Flock(fd int, how int) (err error) {
 //sys	Getpriority(which int, who int) (prio int, err error)
 //sysnb	Getrusage(who int, rusage *Rusage) (err error)
 //sysnb	Getsid(pid int) (sid int, err error)
-<<<<<<< HEAD
 //sysnb	Kill(pid int, sig Signal) (err error)
 //sys	Klogctl(typ int, buf []byte) (n int, err error) = syslog
 //sys	Mkdir(dirfd int, path string, mode uint32) (err error)
 //sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
 //sys	Mkfifo(path string, mode uint32) (err error)
 //sys	Mknod(path string, mode uint32, dev int) (err error)
-=======
-//sysnb	Kill(pid int, sig syscall.Signal) (err error)
-//sys	Klogctl(typ int, buf []byte) (n int, err error) = syslog
-//sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
-//sys	Mkfifo(path string, mode uint32) (err error)
->>>>>>> Add etcd storage
 //sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
 //sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
 //sys   Open(path string, mode int, perm uint32) (fd int, err error) = open64
 //sys   Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
 //sys	read(fd int, p []byte) (n int, err error)
 //sys	Readlink(path string, buf []byte) (n int, err error)
-<<<<<<< HEAD
-=======
-//sys	Removexattr(path string, attr string) (err error)
->>>>>>> Add etcd storage
 //sys	Renameat(olddirfd int, oldpath string, newdirfd int, newpath string) (err error)
 //sys	Setdomainname(p []byte) (err error)
 //sys	Sethostname(p []byte) (err error)
@@ -507,10 +441,6 @@ func Flock(fd int, how int) (err error) {
 //sys	Setpriority(which int, who int, prio int) (err error)
 //sys	Statx(dirfd int, path string, flags int, mask int, stat *Statx_t) (err error)
 //sys	Sync()
-<<<<<<< HEAD
-=======
-//sys	Tee(rfd int, wfd int, len int, flags int) (n int64, err error)
->>>>>>> Add etcd storage
 //sysnb	Times(tms *Tms) (ticks uintptr, err error)
 //sysnb	Umask(mask int) (oldmask int)
 //sysnb	Uname(buf *Utsname) (err error)
@@ -518,10 +448,6 @@ func Flock(fd int, how int) (err error) {
 // //sys	Unmount(target string, flags int) (err error) = umount
 //sys   Unlink(path string) (err error)
 //sys   Unlinkat(dirfd int, path string, flags int) (err error)
-<<<<<<< HEAD
-=======
-//sys	Unshare(flags int) (err error)
->>>>>>> Add etcd storage
 //sys	Ustat(dev int, ubuf *Ustat_t) (err error)
 //sys	write(fd int, p []byte) (n int, err error)
 //sys	readlen(fd int, p *byte, np int) (n int, err error) = read
@@ -607,22 +533,6 @@ func Pipe(p []int) (err error) {
 	return
 }
 
-<<<<<<< HEAD
-=======
-//sysnb pipe2(p *[2]_C_int, flags int) (err error)
-
-func Pipe2(p []int, flags int) (err error) {
-	if len(p) != 2 {
-		return EINVAL
-	}
-	var pp [2]_C_int
-	err = pipe2(&pp, flags)
-	p[0] = int(pp[0])
-	p[1] = int(pp[1])
-	return
-}
-
->>>>>>> Add etcd storage
 //sys	poll(fds *PollFd, nfds int, timeout int) (n int, err error)
 
 func Poll(fds []PollFd, timeout int) (n int, err error) {
@@ -635,8 +545,5 @@ func Poll(fds []PollFd, timeout int) (n int, err error) {
 //sys	gettimeofday(tv *Timeval, tzp *Timezone) (err error)
 //sysnb	Time(t *Time_t) (tt Time_t, err error)
 //sys	Utime(path string, buf *Utimbuf) (err error)
-<<<<<<< HEAD
 
 //sys	Getsystemcfg(label int) (n uint64)
-=======
->>>>>>> Add etcd storage

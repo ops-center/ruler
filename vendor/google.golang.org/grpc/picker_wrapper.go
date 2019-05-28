@@ -101,14 +101,7 @@ func doneChannelzWrapper(acw *acBalancerWrapper, done func(balancer.DoneInfo)) f
 // - the subConn returned by the current picker is not READY
 // When one of these situations happens, pick blocks until the picker gets updated.
 func (bp *pickerWrapper) pick(ctx context.Context, failfast bool, opts balancer.PickOptions) (transport.ClientTransport, func(balancer.DoneInfo), error) {
-<<<<<<< HEAD
 	var ch chan struct{}
-=======
-	var (
-		p  balancer.Picker
-		ch chan struct{}
-	)
->>>>>>> Add etcd storage
 
 	for {
 		bp.mu.Lock()

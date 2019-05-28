@@ -275,12 +275,9 @@ const (
 // uname
 
 type Utsname C.struct_utsname
-<<<<<<< HEAD
 
 // Clockinfo
 
 const SizeofClockinfo = C.sizeof_struct_clockinfo
 
 type Clockinfo C.struct_clockinfo
-=======
->>>>>>> Add etcd storage

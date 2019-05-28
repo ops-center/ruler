@@ -191,18 +191,9 @@ func Dup2(oldfd int, newfd int) (err error) {
 	return Dup3(oldfd, newfd, 0)
 }
 
-<<<<<<< HEAD
 func Pause() error {
 	_, err := ppoll(nil, 0, nil, nil)
 	return err
-=======
-func Pause() (err error) {
-	_, _, e1 := Syscall6(SYS_PPOLL, 0, 0, 0, 0, 0, 0)
-	if e1 != 0 {
-		err = errnoErr(e1)
-	}
-	return
->>>>>>> Add etcd storage
 }
 
 func Poll(fds []PollFd, timeout int) (n int, err error) {
@@ -216,7 +207,6 @@ func Poll(fds []PollFd, timeout int) (n int, err error) {
 	}
 	return ppoll(&fds[0], len(fds), ts, nil)
 }
-<<<<<<< HEAD
 
 func Renameat(olddirfd int, oldpath string, newdirfd int, newpath string) (err error) {
 	return Renameat2(olddirfd, oldpath, newdirfd, newpath, 0)
@@ -234,5 +224,3 @@ func KexecFileLoad(kernelFd int, initrdFd int, cmdline string, flags int) error 
 	}
 	return kexecFileLoad(kernelFd, initrdFd, cmdlineLen, cmdline, flags)
 }
-=======
->>>>>>> Add etcd storage

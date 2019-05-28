@@ -367,7 +367,6 @@ func (logger *Logger) level() Level {
 func (logger *Logger) SetLevel(level Level) {
 	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
 }
-<<<<<<< HEAD
 
 // GetLevel returns the logger level.
 func (logger *Logger) GetLevel() Level {
@@ -414,5 +413,3 @@ func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
 	logger.mu.Unlock()
 	return oldHooks
 }
-=======
->>>>>>> Add etcd storage

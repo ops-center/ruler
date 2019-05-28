@@ -145,11 +145,7 @@ func isTemporary(err error) bool {
 // newHTTP2Client constructs a connected ClientTransport to addr based on HTTP2
 // and starts to receive messages on it. Non-nil error returns if construction
 // fails.
-<<<<<<< HEAD:vendor/google.golang.org/grpc/internal/transport/http2_client.go
 func newHTTP2Client(connectCtx, ctx context.Context, addr TargetInfo, opts ConnectOptions, onPrefaceReceipt func(), onGoAway func(GoAwayReason), onClose func()) (_ *http2Client, err error) {
-=======
-func newHTTP2Client(connectCtx, ctx context.Context, addr TargetInfo, opts ConnectOptions, onSuccess func()) (_ *http2Client, err error) {
->>>>>>> Add etcd storage:vendor/google.golang.org/grpc/internal/transport/http2_client.go
 	scheme := "http"
 	ctx, cancel := context.WithCancel(ctx)
 	defer func() {
@@ -1356,10 +1352,6 @@ func (t *http2Client) ChannelzMetric() *channelz.SocketInternalMetric {
 	if au, ok := t.authInfo.(credentials.ChannelzSecurityInfo); ok {
 		s.Security = au.GetSecurityValue()
 	}
-<<<<<<< HEAD:vendor/google.golang.org/grpc/internal/transport/http2_client.go
-=======
-	t.czmu.RUnlock()
->>>>>>> Add etcd storage:vendor/google.golang.org/grpc/internal/transport/http2_client.go
 	s.RemoteFlowControlWindow = t.getOutFlowWindow()
 	return &s
 }

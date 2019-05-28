@@ -98,10 +98,6 @@ type _Gid_t uint32
 type Stat_t struct {
 	Dev     uint64
 	_       uint16
-<<<<<<< HEAD
-=======
-	_       [2]byte
->>>>>>> Add etcd storage
 	_       uint32
 	Mode    uint32
 	Nlink   uint32
@@ -109,10 +105,6 @@ type Stat_t struct {
 	Gid     uint32
 	Rdev    uint64
 	_       uint16
-<<<<<<< HEAD
-=======
-	_       [2]byte
->>>>>>> Add etcd storage
 	Size    int64
 	Blksize int32
 	Blocks  int64
@@ -263,10 +255,6 @@ type RawSockaddrRFCOMM struct {
 
 type RawSockaddrCAN struct {
 	Family  uint16
-<<<<<<< HEAD
-=======
-	_       [2]byte
->>>>>>> Add etcd storage
 	Ifindex int32
 	Addr    [8]byte
 }
@@ -391,10 +379,6 @@ type TCPInfo struct {
 	Probes         uint8
 	Backoff        uint8
 	Options        uint8
-<<<<<<< HEAD
-=======
-	_              [2]byte
->>>>>>> Add etcd storage
 	Rto            uint32
 	Ato            uint32
 	Snd_mss        uint32
@@ -459,7 +443,6 @@ const (
 )
 
 const (
-<<<<<<< HEAD
 	NDA_UNSPEC              = 0x0
 	NDA_DST                 = 0x1
 	NDA_LLADDR              = 0x2
@@ -635,133 +618,6 @@ const (
 	SizeofRtNexthop         = 0x8
 	SizeofNdUseroptmsg      = 0x10
 	SizeofNdMsg             = 0xc
-=======
-	IFA_UNSPEC           = 0x0
-	IFA_ADDRESS          = 0x1
-	IFA_LOCAL            = 0x2
-	IFA_LABEL            = 0x3
-	IFA_BROADCAST        = 0x4
-	IFA_ANYCAST          = 0x5
-	IFA_CACHEINFO        = 0x6
-	IFA_MULTICAST        = 0x7
-	IFLA_UNSPEC          = 0x0
-	IFLA_ADDRESS         = 0x1
-	IFLA_BROADCAST       = 0x2
-	IFLA_IFNAME          = 0x3
-	IFLA_INFO_KIND       = 0x1
-	IFLA_MTU             = 0x4
-	IFLA_LINK            = 0x5
-	IFLA_QDISC           = 0x6
-	IFLA_STATS           = 0x7
-	IFLA_COST            = 0x8
-	IFLA_PRIORITY        = 0x9
-	IFLA_MASTER          = 0xa
-	IFLA_WIRELESS        = 0xb
-	IFLA_PROTINFO        = 0xc
-	IFLA_TXQLEN          = 0xd
-	IFLA_MAP             = 0xe
-	IFLA_WEIGHT          = 0xf
-	IFLA_OPERSTATE       = 0x10
-	IFLA_LINKMODE        = 0x11
-	IFLA_LINKINFO        = 0x12
-	IFLA_NET_NS_PID      = 0x13
-	IFLA_IFALIAS         = 0x14
-	IFLA_NUM_VF          = 0x15
-	IFLA_VFINFO_LIST     = 0x16
-	IFLA_STATS64         = 0x17
-	IFLA_VF_PORTS        = 0x18
-	IFLA_PORT_SELF       = 0x19
-	IFLA_AF_SPEC         = 0x1a
-	IFLA_GROUP           = 0x1b
-	IFLA_NET_NS_FD       = 0x1c
-	IFLA_EXT_MASK        = 0x1d
-	IFLA_PROMISCUITY     = 0x1e
-	IFLA_NUM_TX_QUEUES   = 0x1f
-	IFLA_NUM_RX_QUEUES   = 0x20
-	IFLA_CARRIER         = 0x21
-	IFLA_PHYS_PORT_ID    = 0x22
-	IFLA_CARRIER_CHANGES = 0x23
-	IFLA_PHYS_SWITCH_ID  = 0x24
-	IFLA_LINK_NETNSID    = 0x25
-	IFLA_PHYS_PORT_NAME  = 0x26
-	IFLA_PROTO_DOWN      = 0x27
-	IFLA_GSO_MAX_SEGS    = 0x28
-	IFLA_GSO_MAX_SIZE    = 0x29
-	IFLA_PAD             = 0x2a
-	IFLA_XDP             = 0x2b
-	IFLA_EVENT           = 0x2c
-	IFLA_NEW_NETNSID     = 0x2d
-	IFLA_IF_NETNSID      = 0x2e
-	IFLA_MAX             = 0x31
-	RT_SCOPE_UNIVERSE    = 0x0
-	RT_SCOPE_SITE        = 0xc8
-	RT_SCOPE_LINK        = 0xfd
-	RT_SCOPE_HOST        = 0xfe
-	RT_SCOPE_NOWHERE     = 0xff
-	RT_TABLE_UNSPEC      = 0x0
-	RT_TABLE_COMPAT      = 0xfc
-	RT_TABLE_DEFAULT     = 0xfd
-	RT_TABLE_MAIN        = 0xfe
-	RT_TABLE_LOCAL       = 0xff
-	RT_TABLE_MAX         = 0xffffffff
-	RTA_UNSPEC           = 0x0
-	RTA_DST              = 0x1
-	RTA_SRC              = 0x2
-	RTA_IIF              = 0x3
-	RTA_OIF              = 0x4
-	RTA_GATEWAY          = 0x5
-	RTA_PRIORITY         = 0x6
-	RTA_PREFSRC          = 0x7
-	RTA_METRICS          = 0x8
-	RTA_MULTIPATH        = 0x9
-	RTA_FLOW             = 0xb
-	RTA_CACHEINFO        = 0xc
-	RTA_TABLE            = 0xf
-	RTA_MARK             = 0x10
-	RTA_MFC_STATS        = 0x11
-	RTA_VIA              = 0x12
-	RTA_NEWDST           = 0x13
-	RTA_PREF             = 0x14
-	RTA_ENCAP_TYPE       = 0x15
-	RTA_ENCAP            = 0x16
-	RTN_UNSPEC           = 0x0
-	RTN_UNICAST          = 0x1
-	RTN_LOCAL            = 0x2
-	RTN_BROADCAST        = 0x3
-	RTN_ANYCAST          = 0x4
-	RTN_MULTICAST        = 0x5
-	RTN_BLACKHOLE        = 0x6
-	RTN_UNREACHABLE      = 0x7
-	RTN_PROHIBIT         = 0x8
-	RTN_THROW            = 0x9
-	RTN_NAT              = 0xa
-	RTN_XRESOLVE         = 0xb
-	RTNLGRP_NONE         = 0x0
-	RTNLGRP_LINK         = 0x1
-	RTNLGRP_NOTIFY       = 0x2
-	RTNLGRP_NEIGH        = 0x3
-	RTNLGRP_TC           = 0x4
-	RTNLGRP_IPV4_IFADDR  = 0x5
-	RTNLGRP_IPV4_MROUTE  = 0x6
-	RTNLGRP_IPV4_ROUTE   = 0x7
-	RTNLGRP_IPV4_RULE    = 0x8
-	RTNLGRP_IPV6_IFADDR  = 0x9
-	RTNLGRP_IPV6_MROUTE  = 0xa
-	RTNLGRP_IPV6_ROUTE   = 0xb
-	RTNLGRP_IPV6_IFINFO  = 0xc
-	RTNLGRP_IPV6_PREFIX  = 0x12
-	RTNLGRP_IPV6_RULE    = 0x13
-	RTNLGRP_ND_USEROPT   = 0x14
-	SizeofNlMsghdr       = 0x10
-	SizeofNlMsgerr       = 0x14
-	SizeofRtGenmsg       = 0x1
-	SizeofNlAttr         = 0x4
-	SizeofRtAttr         = 0x4
-	SizeofIfInfomsg      = 0x10
-	SizeofIfAddrmsg      = 0x8
-	SizeofRtMsg          = 0xc
-	SizeofRtNexthop      = 0x8
->>>>>>> Add etcd storage
 )
 
 type NlMsghdr struct {
@@ -862,10 +718,6 @@ type SockFilter struct {
 
 type SockFprog struct {
 	Len    uint16
-<<<<<<< HEAD
-=======
-	_      [2]byte
->>>>>>> Add etcd storage
 	Filter *SockFilter
 }
 
@@ -1024,18 +876,10 @@ type Winsize struct {
 
 type Taskstats struct {
 	Version                   uint16
-<<<<<<< HEAD
 	Ac_exitcode               uint32
 	Ac_flag                   uint8
 	Ac_nice                   uint8
 	_                         [4]byte
-=======
-	_                         [2]byte
-	Ac_exitcode               uint32
-	Ac_flag                   uint8
-	Ac_nice                   uint8
-	_                         [6]byte
->>>>>>> Add etcd storage
 	Cpu_count                 uint64
 	Cpu_delay_total           uint64
 	Blkio_count               uint64
@@ -1181,12 +1025,8 @@ type PerfEventAttr struct {
 	Clockid            int32
 	Sample_regs_intr   uint64
 	Aux_watermark      uint32
-<<<<<<< HEAD
 	Sample_max_stack   uint16
 	_                  uint16
-=======
-	_                  uint32
->>>>>>> Add etcd storage
 }
 
 type PerfEventMmapPage struct {
@@ -1289,10 +1129,7 @@ const (
 	PERF_COUNT_SW_ALIGNMENT_FAULTS = 0x7
 	PERF_COUNT_SW_EMULATION_FAULTS = 0x8
 	PERF_COUNT_SW_DUMMY            = 0x9
-<<<<<<< HEAD
 	PERF_COUNT_SW_BPF_OUTPUT       = 0xa
-=======
->>>>>>> Add etcd storage
 
 	PERF_SAMPLE_IP           = 0x1
 	PERF_SAMPLE_TID          = 0x2
@@ -1314,7 +1151,6 @@ const (
 	PERF_SAMPLE_BRANCH_ANY_CALL   = 0x10
 	PERF_SAMPLE_BRANCH_ANY_RETURN = 0x20
 	PERF_SAMPLE_BRANCH_IND_CALL   = 0x40
-<<<<<<< HEAD
 	PERF_SAMPLE_BRANCH_ABORT_TX   = 0x80
 	PERF_SAMPLE_BRANCH_IN_TX      = 0x100
 	PERF_SAMPLE_BRANCH_NO_TX      = 0x200
@@ -1325,15 +1161,12 @@ const (
 	PERF_SAMPLE_BRANCH_NO_FLAGS   = 0x4000
 	PERF_SAMPLE_BRANCH_NO_CYCLES  = 0x8000
 	PERF_SAMPLE_BRANCH_TYPE_SAVE  = 0x10000
-=======
->>>>>>> Add etcd storage
 
 	PERF_FORMAT_TOTAL_TIME_ENABLED = 0x1
 	PERF_FORMAT_TOTAL_TIME_RUNNING = 0x2
 	PERF_FORMAT_ID                 = 0x4
 	PERF_FORMAT_GROUP              = 0x8
 
-<<<<<<< HEAD
 	PERF_RECORD_MMAP            = 0x1
 	PERF_RECORD_LOST            = 0x2
 	PERF_RECORD_COMM            = 0x3
@@ -1350,17 +1183,6 @@ const (
 	PERF_RECORD_SWITCH          = 0xe
 	PERF_RECORD_SWITCH_CPU_WIDE = 0xf
 	PERF_RECORD_NAMESPACES      = 0x10
-=======
-	PERF_RECORD_MMAP       = 0x1
-	PERF_RECORD_LOST       = 0x2
-	PERF_RECORD_COMM       = 0x3
-	PERF_RECORD_EXIT       = 0x4
-	PERF_RECORD_THROTTLE   = 0x5
-	PERF_RECORD_UNTHROTTLE = 0x6
-	PERF_RECORD_FORK       = 0x7
-	PERF_RECORD_READ       = 0x8
-	PERF_RECORD_SAMPLE     = 0x9
->>>>>>> Add etcd storage
 
 	PERF_CONTEXT_HV     = -0x20
 	PERF_CONTEXT_KERNEL = -0x80
@@ -1373,10 +1195,7 @@ const (
 	PERF_FLAG_FD_NO_GROUP = 0x1
 	PERF_FLAG_FD_OUTPUT   = 0x2
 	PERF_FLAG_PID_CGROUP  = 0x4
-<<<<<<< HEAD
 	PERF_FLAG_FD_CLOEXEC  = 0x8
-=======
->>>>>>> Add etcd storage
 )
 
 const (
@@ -1681,12 +1500,9 @@ const (
 	SizeofTpacketHdr  = 0x18
 	SizeofTpacket2Hdr = 0x20
 	SizeofTpacket3Hdr = 0x30
-<<<<<<< HEAD
 
 	SizeofTpacketStats   = 0x8
 	SizeofTpacketStatsV3 = 0xc
-=======
->>>>>>> Add etcd storage
 )
 
 const (
@@ -2162,10 +1978,6 @@ type RTCTime struct {
 type RTCWkAlrm struct {
 	Enabled uint8
 	Pending uint8
-<<<<<<< HEAD
-=======
-	_       [2]byte
->>>>>>> Add etcd storage
 	Time    RTCTime
 }
 
@@ -2207,7 +2019,6 @@ const (
 	NETNSA_PID  = 0x2
 	NETNSA_FD   = 0x3
 )
-<<<<<<< HEAD
 
 type XDPRingOffset struct {
 	Producer uint64
@@ -2322,5 +2133,3 @@ type FanotifyResponse struct {
 	Fd       int32
 	Response uint32
 }
-=======
->>>>>>> Add etcd storage

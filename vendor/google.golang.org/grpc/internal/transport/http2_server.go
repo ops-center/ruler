@@ -296,11 +296,7 @@ func (t *http2Server) operateHeaders(frame *http2.MetaHeadersFrame, handle func(
 				onWrite:  func() {},
 			})
 		}
-<<<<<<< HEAD:vendor/google.golang.org/grpc/internal/transport/http2_server.go
 		return false
-=======
-		return
->>>>>>> Add etcd storage:vendor/google.golang.org/grpc/internal/transport/http2_server.go
 	}
 
 	buf := newRecvBuffer()
@@ -1173,10 +1169,6 @@ func (t *http2Server) ChannelzMetric() *channelz.SocketInternalMetric {
 	if au, ok := t.authInfo.(credentials.ChannelzSecurityInfo); ok {
 		s.Security = au.GetSecurityValue()
 	}
-<<<<<<< HEAD:vendor/google.golang.org/grpc/internal/transport/http2_server.go
-=======
-	t.czmu.RUnlock()
->>>>>>> Add etcd storage:vendor/google.golang.org/grpc/internal/transport/http2_server.go
 	s.RemoteFlowControlWindow = t.getOutFlowWindow()
 	return &s
 }

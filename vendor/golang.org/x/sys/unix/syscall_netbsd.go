@@ -94,7 +94,6 @@ func nametomib(name string) (mib []_C_int, err error) {
 	return mib, nil
 }
 
-<<<<<<< HEAD
 func SysctlClockinfo(name string) (*Clockinfo, error) {
 	mib, err := sysctlmib(name)
 	if err != nil {
@@ -112,8 +111,6 @@ func SysctlClockinfo(name string) (*Clockinfo, error) {
 	return &ci, nil
 }
 
-=======
->>>>>>> Add etcd storage
 //sysnb pipe() (fd1 int, fd2 int, err error)
 func Pipe(p []int) (err error) {
 	if len(p) != 2 {
@@ -194,7 +191,6 @@ func IoctlGetTermios(fd int, req uint) (*Termios, error) {
 	return &value, err
 }
 
-<<<<<<< HEAD
 func IoctlGetPtmget(fd int, req uint) (*Ptmget, error) {
 	var value Ptmget
 	err := ioctl(fd, req, uintptr(unsafe.Pointer(&value)))
@@ -202,8 +198,6 @@ func IoctlGetPtmget(fd int, req uint) (*Ptmget, error) {
 	return &value, err
 }
 
-=======
->>>>>>> Add etcd storage
 func Uname(uname *Utsname) error {
 	mib := []_C_int{CTL_KERN, KERN_OSTYPE}
 	n := unsafe.Sizeof(uname.Sysname)
@@ -250,7 +244,6 @@ func Uname(uname *Utsname) error {
 	return nil
 }
 
-<<<<<<< HEAD
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
@@ -258,8 +251,6 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 	return sendfile(outfd, infd, offset, count)
 }
 
-=======
->>>>>>> Add etcd storage
 /*
  * Exposed directly
  */

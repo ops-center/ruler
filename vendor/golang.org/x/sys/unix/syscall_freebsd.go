@@ -13,7 +13,6 @@
 package unix
 
 import (
-<<<<<<< HEAD
 	"sync"
 	"unsafe"
 )
@@ -41,10 +40,6 @@ func supportsABI(ver uint32) bool {
 	osreldateOnce.Do(func() { osreldate, _ = SysctlUint32("kern.osreldate") })
 	return osreldate >= ver
 }
-=======
-	"unsafe"
-)
->>>>>>> Add etcd storage
 
 // SockaddrDatalink implements the Sockaddr interface for AF_LINK type sockets.
 type SockaddrDatalink struct {
@@ -190,7 +185,6 @@ func Getfsstat(buf []Statfs_t, flags int) (n int, err error) {
 func setattrlistTimes(path string, times []Timespec, flags int) error {
 	// used on Darwin for UtimesNano
 	return ENOSYS
-<<<<<<< HEAD
 }
 
 //sys   ioctl(fd int, req uint, arg uintptr) (err error)
@@ -427,8 +421,6 @@ func (s *Stat_t) convertFrom(old *stat_freebsd11_t) {
 		Flags:    old.Flags,
 		Gen:      uint64(old.Gen),
 	}
-=======
->>>>>>> Add etcd storage
 }
 
 func (s *Statfs_t) convertFrom(old *statfs_freebsd11_t) {
@@ -465,7 +457,6 @@ func (s *Statfs_t) convertFrom(old *statfs_freebsd11_t) {
 	n = clen(*(*[]byte)(unsafe.Pointer(&sl)))
 	copy(s.Mntfromname[:], old.Mntfromname[:n])
 
-<<<<<<< HEAD
 	sl = old.Mntonname[:]
 	n = clen(*(*[]byte)(unsafe.Pointer(&sl)))
 	copy(s.Mntonname[:], old.Mntonname[:n])
@@ -476,15 +467,6 @@ func convertFromDirents11(buf []byte, old []byte) int {
 		fixedSize    = int(unsafe.Offsetof(Dirent{}.Name))
 		oldFixedSize = int(unsafe.Offsetof(dirent_freebsd11{}.Name))
 	)
-=======
-func ioctlSetWinsize(fd int, req uint, value *Winsize) error {
-	return ioctl(fd, req, uintptr(unsafe.Pointer(value)))
-}
-
-func ioctlSetTermios(fd int, req uint, value *Termios) error {
-	return ioctl(fd, req, uintptr(unsafe.Pointer(value)))
-}
->>>>>>> Add etcd storage
 
 	dstPos := 0
 	srcPos := 0
@@ -523,52 +505,6 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
 	}
 	return sendfile(outfd, infd, offset, count)
-}
-
-func Uname(uname *Utsname) error {
-	mib := []_C_int{CTL_KERN, KERN_OSTYPE}
-	n := unsafe.Sizeof(uname.Sysname)
-	if err := sysctl(mib, &uname.Sysname[0], &n, nil, 0); err != nil {
-		return err
-	}
-
-	mib = []_C_int{CTL_KERN, KERN_HOSTNAME}
-	n = unsafe.Sizeof(uname.Nodename)
-	if err := sysctl(mib, &uname.Nodename[0], &n, nil, 0); err != nil {
-		return err
-	}
-
-	mib = []_C_int{CTL_KERN, KERN_OSRELEASE}
-	n = unsafe.Sizeof(uname.Release)
-	if err := sysctl(mib, &uname.Release[0], &n, nil, 0); err != nil {
-		return err
-	}
-
-	mib = []_C_int{CTL_KERN, KERN_VERSION}
-	n = unsafe.Sizeof(uname.Version)
-	if err := sysctl(mib, &uname.Version[0], &n, nil, 0); err != nil {
-		return err
-	}
-
-	// The version might have newlines or tabs in it, convert them to
-	// spaces.
-	for i, b := range uname.Version {
-		if b == '\n' || b == '\t' {
-			if i == len(uname.Version)-1 {
-				uname.Version[i] = 0
-			} else {
-				uname.Version[i] = ' '
-			}
-		}
-	}
-
-	mib = []_C_int{CTL_HW, HW_MACHINE}
-	n = unsafe.Sizeof(uname.Machine)
-	if err := sysctl(mib, &uname.Machine[0], &n, nil, 0); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 /*
@@ -610,7 +546,6 @@ func Uname(uname *Utsname) error {
 //sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
 //sys	Flock(fd int, how int) (err error)
 //sys	Fpathconf(fd int, name int) (val int, err error)
-<<<<<<< HEAD
 //sys	fstat(fd int, stat *stat_freebsd11_t) (err error)
 //sys	fstat_freebsd12(fd int, stat *Stat_t) (err error)
 //sys	fstatat(fd int, path string, stat *stat_freebsd11_t, flags int) (err error)
@@ -621,15 +556,6 @@ func Uname(uname *Utsname) error {
 //sys	Ftruncate(fd int, length int64) (err error)
 //sys	getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error)
 //sys	getdirentries_freebsd12(fd int, buf []byte, basep *uintptr) (n int, err error)
-=======
-//sys	Fstat(fd int, stat *Stat_t) (err error)
-//sys	Fstatat(fd int, path string, stat *Stat_t, flags int) (err error)
-//sys	Fstatfs(fd int, stat *Statfs_t) (err error)
-//sys	Fsync(fd int) (err error)
-//sys	Ftruncate(fd int, length int64) (err error)
-//sys	Getdents(fd int, buf []byte) (n int, err error)
-//sys	Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error)
->>>>>>> Add etcd storage
 //sys	Getdtablesize() (size int)
 //sysnb	Getegid() (egid int)
 //sysnb	Geteuid() (uid int)

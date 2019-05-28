@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 // +build !appengine
-=======
-// +build !appengine,go1.7
->>>>>>> Add etcd storage
 
 /*
  *
@@ -54,8 +50,4 @@ func (s *SocketOptionData) Getsockopt(fd uintptr) {
 	if v, err := unix.GetsockoptTCPInfo(int(fd), syscall.SOL_TCP, syscall.TCP_INFO); err == nil {
 		s.TCPInfo = v
 	}
-<<<<<<< HEAD
-=======
-	return
->>>>>>> Add etcd storage
 }

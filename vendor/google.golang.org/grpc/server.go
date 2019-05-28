@@ -939,16 +939,6 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 			if e := t.WriteStatus(stream, st); e != nil {
 				grpclog.Warningf("grpc: Server.processUnaryRPC failed to write status %v", e)
 			}
-<<<<<<< HEAD
-=======
-		} else {
-			switch st := err.(type) {
-			case transport.ConnectionError:
-				// Nothing to do here.
-			default:
-				panic(fmt.Sprintf("grpc: Unexpected error (%T) from recvMsg: %v", st, st))
-			}
->>>>>>> Add etcd storage
 		}
 		return err
 	}

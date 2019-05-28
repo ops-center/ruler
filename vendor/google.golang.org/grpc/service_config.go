@@ -96,7 +96,6 @@ type ServiceConfig struct {
 	// If token_count is less than or equal to maxTokens / 2, then RPCs will not
 	// be retried and hedged RPCs will not be sent.
 	retryThrottling *retryThrottlingPolicy
-<<<<<<< HEAD
 	// healthCheckConfig must be set as one of the requirement to enable LB channel
 	// health check.
 	healthCheckConfig *healthCheckConfig
@@ -106,8 +105,6 @@ type ServiceConfig struct {
 type healthCheckConfig struct {
 	// serviceName is the service name to use in the health-checking request.
 	ServiceName string
-=======
->>>>>>> Add etcd storage
 }
 
 // retryPolicy defines the go-native version of the retry policy defined by the
@@ -238,10 +235,7 @@ type jsonSC struct {
 	LoadBalancingPolicy *string
 	MethodConfig        *[]jsonMC
 	RetryThrottling     *retryThrottlingPolicy
-<<<<<<< HEAD
 	HealthCheckConfig   *healthCheckConfig
-=======
->>>>>>> Add etcd storage
 }
 
 func parseServiceConfig(js string) (ServiceConfig, error) {
@@ -255,16 +249,10 @@ func parseServiceConfig(js string) (ServiceConfig, error) {
 		return ServiceConfig{}, err
 	}
 	sc := ServiceConfig{
-<<<<<<< HEAD
 		LB:                rsc.LoadBalancingPolicy,
 		Methods:           make(map[string]MethodConfig),
 		retryThrottling:   rsc.RetryThrottling,
 		healthCheckConfig: rsc.HealthCheckConfig,
-=======
-		LB:              rsc.LoadBalancingPolicy,
-		Methods:         make(map[string]MethodConfig),
-		retryThrottling: rsc.RetryThrottling,
->>>>>>> Add etcd storage
 	}
 	if rsc.MethodConfig == nil {
 		return sc, nil

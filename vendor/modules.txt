@@ -74,23 +74,29 @@ github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1
 github.com/cespare/xxhash
 # github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd
 github.com/codahale/hdrhistogram
+# github.com/coreos/etcd v3.3.12+incompatible
+github.com/coreos/etcd/auth/authpb
+github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes
+github.com/coreos/etcd/etcdserver/etcdserverpb
+github.com/coreos/etcd/mvcc/mvccpb
+github.com/coreos/etcd/pkg/types
 # github.com/cortexproject/cortex v0.0.0-20190517092904-975f5bb837c7
 github.com/cortexproject/cortex/pkg/util
 github.com/cortexproject/cortex/pkg/prom1/storage/metric
+github.com/cortexproject/cortex/pkg/querier
 github.com/cortexproject/cortex/pkg/configs
 github.com/cortexproject/cortex/pkg/configs/api
 github.com/cortexproject/cortex/pkg/configs/db
 github.com/cortexproject/cortex/pkg/configs/db/dbtest
-github.com/cortexproject/cortex/pkg/querier
-github.com/cortexproject/cortex/pkg/configs/legacy_promql
-github.com/cortexproject/cortex/pkg/configs/db/memory
-github.com/cortexproject/cortex/pkg/configs/db/postgres
 github.com/cortexproject/cortex/pkg/chunk
 github.com/cortexproject/cortex/pkg/ingester/client
 github.com/cortexproject/cortex/pkg/querier/batch
 github.com/cortexproject/cortex/pkg/querier/frontend
 github.com/cortexproject/cortex/pkg/querier/iterators
 github.com/cortexproject/cortex/pkg/util/chunkcompat
+github.com/cortexproject/cortex/pkg/configs/legacy_promql
+github.com/cortexproject/cortex/pkg/configs/db/memory
+github.com/cortexproject/cortex/pkg/configs/db/postgres
 github.com/cortexproject/cortex/pkg/chunk/cache
 github.com/cortexproject/cortex/pkg/chunk/encoding
 github.com/cortexproject/cortex/pkg/util/extract
@@ -361,6 +367,8 @@ github.com/weaveworks/common/errors
 github.com/weaveworks/common/mtime
 # github.com/weaveworks/promrus v1.2.0
 github.com/weaveworks/promrus
+# go.etcd.io/etcd v3.3.13+incompatible
+go.etcd.io/etcd/clientv3
 # go.opencensus.io v0.21.0
 go.opencensus.io/plugin/ochttp
 go.opencensus.io/plugin/ochttp/propagation/tracecontext
@@ -449,11 +457,13 @@ google.golang.org/grpc
 google.golang.org/grpc/codes
 google.golang.org/grpc/grpclog
 google.golang.org/grpc/status
+google.golang.org/grpc/credentials
+google.golang.org/grpc/health/grpc_health_v1
+google.golang.org/grpc/keepalive
 google.golang.org/grpc/metadata
 google.golang.org/grpc/balancer
 google.golang.org/grpc/balancer/roundrobin
 google.golang.org/grpc/connectivity
-google.golang.org/grpc/credentials
 google.golang.org/grpc/encoding
 google.golang.org/grpc/encoding/proto
 google.golang.org/grpc/internal
@@ -464,7 +474,6 @@ google.golang.org/grpc/internal/envconfig
 google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
 google.golang.org/grpc/internal/transport
-google.golang.org/grpc/keepalive
 google.golang.org/grpc/naming
 google.golang.org/grpc/peer
 google.golang.org/grpc/resolver
@@ -472,12 +481,11 @@ google.golang.org/grpc/resolver/dns
 google.golang.org/grpc/resolver/passthrough
 google.golang.org/grpc/stats
 google.golang.org/grpc/tap
-google.golang.org/grpc/balancer/base
 google.golang.org/grpc/credentials/internal
+google.golang.org/grpc/balancer/base
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
 google.golang.org/grpc/internal/syscall
 google.golang.org/grpc/encoding/gzip
-google.golang.org/grpc/health/grpc_health_v1
 # gopkg.in/fsnotify/fsnotify.v1 v1.4.7
 gopkg.in/fsnotify/fsnotify.v1
 # gopkg.in/inf.v0 v0.9.1

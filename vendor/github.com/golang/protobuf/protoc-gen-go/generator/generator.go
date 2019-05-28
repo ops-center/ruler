@@ -1262,11 +1262,7 @@ func (g *Generator) makeComments(path string) (string, bool) {
 	w := new(bytes.Buffer)
 	nl := ""
 	for _, line := range strings.Split(strings.TrimSuffix(loc.GetLeadingComments(), "\n"), "\n") {
-<<<<<<< HEAD
 		fmt.Fprintf(w, "%s//%s", nl, line)
-=======
-		fmt.Fprintf(w, "%s// %s", nl, strings.TrimPrefix(line, " "))
->>>>>>> Add etcd storage
 		nl = "\n"
 	}
 	return w.String(), true
@@ -1713,7 +1709,6 @@ var wellKnownTypes = map[string]bool{
 func (g *Generator) getterDefault(field *descriptor.FieldDescriptorProto, goMessageType string) string {
 	if isRepeated(field) {
 		return "nil"
-<<<<<<< HEAD
 	}
 	if def := field.GetDefaultValue(); def != "" {
 		defaultConstant := g.defaultConstantName(goMessageType, field.GetName())
@@ -1976,468 +1971,6 @@ type defField interface {
 	getProtoType() descriptor.FieldDescriptorProto_Type // *field.Type value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64
 }
 
-=======
-	}
-	if def := field.GetDefaultValue(); def != "" {
-		defaultConstant := g.defaultConstantName(goMessageType, field.GetName())
-		if *field.Type != descriptor.FieldDescriptorProto_TYPE_BYTES {
-			return defaultConstant
-		}
-		return "append([]byte(nil), " + defaultConstant + "...)"
-	}
-	switch *field.Type {
-	case descriptor.FieldDescriptorProto_TYPE_BOOL:
-		return "false"
-	case descriptor.FieldDescriptorProto_TYPE_STRING:
-		return `""`
-	case descriptor.FieldDescriptorProto_TYPE_GROUP, descriptor.FieldDescriptorProto_TYPE_MESSAGE, descriptor.FieldDescriptorProto_TYPE_BYTES:
-		return "nil"
-	case descriptor.FieldDescriptorProto_TYPE_ENUM:
-		obj := g.ObjectNamed(field.GetTypeName())
-		var enum *EnumDescriptor
-		if id, ok := obj.(*ImportedDescriptor); ok {
-			// The enum type has been publicly imported.
-			enum, _ = id.o.(*EnumDescriptor)
-		} else {
-			enum, _ = obj.(*EnumDescriptor)
-		}
-		if enum == nil {
-			log.Printf("don't know how to generate getter for %s", field.GetName())
-			return "nil"
-		}
-		if len(enum.Value) == 0 {
-			return "0 // empty enum"
-		}
-		first := enum.Value[0].GetName()
-		return g.DefaultPackageName(obj) + enum.prefix() + first
-	default:
-		return "0"
-	}
-}
-
-// defaultConstantName builds the name of the default constant from the message
-// type name and the untouched field name, e.g. "Default_MessageType_FieldName"
-func (g *Generator) defaultConstantName(goMessageType, protoFieldName string) string {
-	return "Default_" + goMessageType + "_" + CamelCase(protoFieldName)
-}
-
-// The different types of fields in a message and how to actually print them
-// Most of the logic for generateMessage is in the methods of these types.
-//
-// Note that the content of the field is irrelevant, a simpleField can contain
-// anything from a scalar to a group (which is just a message).
-//
-// Extension fields (and message sets) are however handled separately.
-//
-// simpleField - a field that is neiter weak nor oneof, possibly repeated
-// oneofField - field containing list of subfields:
-// - oneofSubField - a field within the oneof
-
-// msgCtx contais the context for the generator functions.
-type msgCtx struct {
-	goName  string      // Go struct name of the message, e.g. MessageName
-	message *Descriptor // The descriptor for the message
-}
-
-// fieldCommon contains data common to all types of fields.
-type fieldCommon struct {
-	goName     string // Go name of field, e.g. "FieldName" or "Descriptor_"
-	protoName  string // Name of field in proto language, e.g. "field_name" or "descriptor"
-	getterName string // Name of the getter, e.g. "GetFieldName" or "GetDescriptor_"
-	goType     string // The Go type as a string, e.g. "*int32" or "*OtherMessage"
-	tags       string // The tag string/annotation for the type, e.g. `protobuf:"varint,8,opt,name=region_id,json=regionId"`
-	fullPath   string // The full path of the field as used by Annotate etc, e.g. "4,0,2,0"
-}
-
-// getProtoName gets the proto name of a field, e.g. "field_name" or "descriptor".
-func (f *fieldCommon) getProtoName() string {
-	return f.protoName
-}
-
-// getGoType returns the go type of the field  as a string, e.g. "*int32".
-func (f *fieldCommon) getGoType() string {
-	return f.goType
-}
-
-// simpleField is not weak, not a oneof, not an extension. Can be required, optional or repeated.
-type simpleField struct {
-	fieldCommon
-	protoTypeName string                               // Proto type name, empty if primitive, e.g. ".google.protobuf.Duration"
-	protoType     descriptor.FieldDescriptorProto_Type // Actual type enum value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64
-	deprecated    string                               // Deprecation comment, if any, e.g. "// Deprecated: Do not use."
-	getterDef     string                               // Default for getters, e.g. "nil", `""` or "Default_MessageType_FieldName"
-	protoDef      string                               // Default value as defined in the proto file, e.g "yoshi" or "5"
-	comment       string                               // The full comment for the field, e.g. "// Useful information"
-}
-
-// decl prints the declaration of the field in the struct (if any).
-func (f *simpleField) decl(g *Generator, mc *msgCtx) {
-	g.P(f.comment, Annotate(mc.message.file, f.fullPath, f.goName), "\t", f.goType, "\t`", f.tags, "`", f.deprecated)
-}
-
-// getter prints the getter for the field.
-func (f *simpleField) getter(g *Generator, mc *msgCtx) {
-	star := ""
-	tname := f.goType
-	if needsStar(f.protoType) && tname[0] == '*' {
-		tname = tname[1:]
-		star = "*"
-	}
-	if f.deprecated != "" {
-		g.P(f.deprecated)
-	}
-	g.P("func (m *", mc.goName, ") ", Annotate(mc.message.file, f.fullPath, f.getterName), "() "+tname+" {")
-	if f.getterDef == "nil" { // Simpler getter
-		g.P("if m != nil {")
-		g.P("return m." + f.goName)
-		g.P("}")
-		g.P("return nil")
-		g.P("}")
-		g.P()
-		return
-	}
-	if mc.message.proto3() {
-		g.P("if m != nil {")
-	} else {
-		g.P("if m != nil && m." + f.goName + " != nil {")
-	}
-	g.P("return " + star + "m." + f.goName)
-	g.P("}")
-	g.P("return ", f.getterDef)
-	g.P("}")
-	g.P()
-}
-
-// setter prints the setter method of the field.
-func (f *simpleField) setter(g *Generator, mc *msgCtx) {
-	// No setter for regular fields yet
-}
-
-// getProtoDef returns the default value explicitly stated in the proto file, e.g "yoshi" or "5".
-func (f *simpleField) getProtoDef() string {
-	return f.protoDef
-}
-
-// getProtoTypeName returns the protobuf type name for the field as returned by field.GetTypeName(), e.g. ".google.protobuf.Duration".
-func (f *simpleField) getProtoTypeName() string {
-	return f.protoTypeName
-}
-
-// getProtoType returns the *field.Type value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64.
-func (f *simpleField) getProtoType() descriptor.FieldDescriptorProto_Type {
-	return f.protoType
-}
-
-// oneofSubFields are kept slize held by each oneofField. They do not appear in the top level slize of fields for the message.
-type oneofSubField struct {
-	fieldCommon
-	protoTypeName string                               // Proto type name, empty if primitive, e.g. ".google.protobuf.Duration"
-	protoType     descriptor.FieldDescriptorProto_Type // Actual type enum value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64
-	oneofTypeName string                               // Type name of the enclosing struct, e.g. "MessageName_FieldName"
-	fieldNumber   int                                  // Actual field number, as defined in proto, e.g. 12
-	getterDef     string                               // Default for getters, e.g. "nil", `""` or "Default_MessageType_FieldName"
-	protoDef      string                               // Default value as defined in the proto file, e.g "yoshi" or "5"
-}
-
-// wireTypeName returns a textual wire type, needed for oneof sub fields in generated code.
-func (f *oneofSubField) wireTypeName() string {
-	switch f.protoType {
-	case descriptor.FieldDescriptorProto_TYPE_FIXED64,
-		descriptor.FieldDescriptorProto_TYPE_SFIXED64,
-		descriptor.FieldDescriptorProto_TYPE_DOUBLE:
-		return "WireFixed64"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED32,
-		descriptor.FieldDescriptorProto_TYPE_SFIXED32,
-		descriptor.FieldDescriptorProto_TYPE_FLOAT:
-		return "WireFixed32"
-	case descriptor.FieldDescriptorProto_TYPE_GROUP:
-		return "WireStartGroup"
-	case descriptor.FieldDescriptorProto_TYPE_MESSAGE,
-		descriptor.FieldDescriptorProto_TYPE_STRING,
-		descriptor.FieldDescriptorProto_TYPE_BYTES:
-		return "WireBytes"
-	default: // All others are Varints
-		return "WireVarint"
-	}
-}
-
-// typedNil prints a nil casted to the pointer to this field.
-// - for XXX_OneofFuncs
-func (f *oneofSubField) typedNil(g *Generator) {
-	g.P("(*", f.oneofTypeName, ")(nil),")
-}
-
-// marshalCase prints the case matching this oneof subfield in the marshalling code.
-func (f *oneofSubField) marshalCase(g *Generator) {
-	g.P("case *", f.oneofTypeName, ":")
-	wire := f.wireTypeName()
-	var pre, post string
-	val := "x." + f.goName // overridden for TYPE_BOOL
-	switch f.protoType {
-	case descriptor.FieldDescriptorProto_TYPE_DOUBLE:
-		pre = "b.EncodeFixed64(" + g.Pkg["math"] + ".Float64bits("
-		post = "))"
-	case descriptor.FieldDescriptorProto_TYPE_FLOAT:
-		pre = "b.EncodeFixed32(uint64(" + g.Pkg["math"] + ".Float32bits("
-		post = ")))"
-	case descriptor.FieldDescriptorProto_TYPE_INT64, descriptor.FieldDescriptorProto_TYPE_UINT64:
-		pre, post = "b.EncodeVarint(uint64(", "))"
-	case descriptor.FieldDescriptorProto_TYPE_INT32, descriptor.FieldDescriptorProto_TYPE_UINT32, descriptor.FieldDescriptorProto_TYPE_ENUM:
-		pre, post = "b.EncodeVarint(uint64(", "))"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED64, descriptor.FieldDescriptorProto_TYPE_SFIXED64:
-		pre, post = "b.EncodeFixed64(uint64(", "))"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED32, descriptor.FieldDescriptorProto_TYPE_SFIXED32:
-		pre, post = "b.EncodeFixed32(uint64(", "))"
-	case descriptor.FieldDescriptorProto_TYPE_BOOL:
-		g.P("t := uint64(0)")
-		g.P("if ", val, " { t = 1 }")
-		val = "t"
-		pre, post = "b.EncodeVarint(", ")"
-	case descriptor.FieldDescriptorProto_TYPE_STRING:
-		pre, post = "b.EncodeStringBytes(", ")"
-	case descriptor.FieldDescriptorProto_TYPE_GROUP:
-		pre, post = "b.Marshal(", ")"
-	case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-		pre, post = "b.EncodeMessage(", ")"
-	case descriptor.FieldDescriptorProto_TYPE_BYTES:
-		pre, post = "b.EncodeRawBytes(", ")"
-	case descriptor.FieldDescriptorProto_TYPE_SINT32:
-		pre, post = "b.EncodeZigzag32(uint64(", "))"
-	case descriptor.FieldDescriptorProto_TYPE_SINT64:
-		pre, post = "b.EncodeZigzag64(uint64(", "))"
-	default:
-		g.Fail("unhandled oneof field type ", f.protoType.String())
-	}
-	g.P("b.EncodeVarint(", f.fieldNumber, "<<3|", g.Pkg["proto"], ".", wire, ")")
-	if t := f.protoType; t != descriptor.FieldDescriptorProto_TYPE_GROUP && t != descriptor.FieldDescriptorProto_TYPE_MESSAGE {
-		g.P(pre, val, post)
-	} else {
-		g.P("if err := ", pre, val, post, "; err != nil {")
-		g.P("return err")
-		g.P("}")
-	}
-	if f.protoType == descriptor.FieldDescriptorProto_TYPE_GROUP {
-		g.P("b.EncodeVarint(", f.fieldNumber, "<<3|", g.Pkg["proto"], ".WireEndGroup)")
-	}
-}
-
-// unmarshalCase prints the case matching this oneof subfield in the unmarshalling code.
-func (f *oneofSubField) unmarshalCase(g *Generator, origOneofName string, oneofName string) {
-	g.P("case ", f.fieldNumber, ": // ", origOneofName, ".", f.getProtoName())
-	g.P("if wire != ", g.Pkg["proto"], ".", f.wireTypeName(), " {")
-	g.P("return true, ", g.Pkg["proto"], ".ErrInternalBadWireType")
-	g.P("}")
-	lhs := "x, err" // overridden for TYPE_MESSAGE and TYPE_GROUP
-	var dec, cast, cast2 string
-	switch f.protoType {
-	case descriptor.FieldDescriptorProto_TYPE_DOUBLE:
-		dec, cast = "b.DecodeFixed64()", g.Pkg["math"]+".Float64frombits"
-	case descriptor.FieldDescriptorProto_TYPE_FLOAT:
-		dec, cast, cast2 = "b.DecodeFixed32()", "uint32", g.Pkg["math"]+".Float32frombits"
-	case descriptor.FieldDescriptorProto_TYPE_INT64:
-		dec, cast = "b.DecodeVarint()", "int64"
-	case descriptor.FieldDescriptorProto_TYPE_UINT64:
-		dec = "b.DecodeVarint()"
-	case descriptor.FieldDescriptorProto_TYPE_INT32:
-		dec, cast = "b.DecodeVarint()", "int32"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED64:
-		dec = "b.DecodeFixed64()"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED32:
-		dec, cast = "b.DecodeFixed32()", "uint32"
-	case descriptor.FieldDescriptorProto_TYPE_BOOL:
-		dec = "b.DecodeVarint()"
-		// handled specially below
-	case descriptor.FieldDescriptorProto_TYPE_STRING:
-		dec = "b.DecodeStringBytes()"
-	case descriptor.FieldDescriptorProto_TYPE_GROUP:
-		g.P("msg := new(", f.goType[1:], ")") // drop star
-		lhs = "err"
-		dec = "b.DecodeGroup(msg)"
-		// handled specially below
-	case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-		g.P("msg := new(", f.goType[1:], ")") // drop star
-		lhs = "err"
-		dec = "b.DecodeMessage(msg)"
-		// handled specially below
-	case descriptor.FieldDescriptorProto_TYPE_BYTES:
-		dec = "b.DecodeRawBytes(true)"
-	case descriptor.FieldDescriptorProto_TYPE_UINT32:
-		dec, cast = "b.DecodeVarint()", "uint32"
-	case descriptor.FieldDescriptorProto_TYPE_ENUM:
-		dec, cast = "b.DecodeVarint()", f.goType
-	case descriptor.FieldDescriptorProto_TYPE_SFIXED32:
-		dec, cast = "b.DecodeFixed32()", "int32"
-	case descriptor.FieldDescriptorProto_TYPE_SFIXED64:
-		dec, cast = "b.DecodeFixed64()", "int64"
-	case descriptor.FieldDescriptorProto_TYPE_SINT32:
-		dec, cast = "b.DecodeZigzag32()", "int32"
-	case descriptor.FieldDescriptorProto_TYPE_SINT64:
-		dec, cast = "b.DecodeZigzag64()", "int64"
-	default:
-		g.Fail("unhandled oneof field type ", f.protoType.String())
-	}
-	g.P(lhs, " := ", dec)
-	val := "x"
-	if cast != "" {
-		val = cast + "(" + val + ")"
-	}
-	if cast2 != "" {
-		val = cast2 + "(" + val + ")"
-	}
-	switch f.protoType {
-	case descriptor.FieldDescriptorProto_TYPE_BOOL:
-		val += " != 0"
-	case descriptor.FieldDescriptorProto_TYPE_GROUP,
-		descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-		val = "msg"
-	}
-	g.P("m.", oneofName, " = &", f.oneofTypeName, "{", val, "}")
-	g.P("return true, err")
-}
-
-// sizerCase prints the case matching this oneof subfield in the sizer code.
-func (f *oneofSubField) sizerCase(g *Generator) {
-	g.P("case *", f.oneofTypeName, ":")
-	val := "x." + f.goName
-	var varint, fixed string
-	switch f.protoType {
-	case descriptor.FieldDescriptorProto_TYPE_DOUBLE:
-		fixed = "8"
-	case descriptor.FieldDescriptorProto_TYPE_FLOAT:
-		fixed = "4"
-	case descriptor.FieldDescriptorProto_TYPE_INT64, descriptor.FieldDescriptorProto_TYPE_UINT64, descriptor.FieldDescriptorProto_TYPE_INT32, descriptor.FieldDescriptorProto_TYPE_UINT32, descriptor.FieldDescriptorProto_TYPE_ENUM:
-		varint = val
-	case descriptor.FieldDescriptorProto_TYPE_FIXED64, descriptor.FieldDescriptorProto_TYPE_SFIXED64:
-		fixed = "8"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED32, descriptor.FieldDescriptorProto_TYPE_SFIXED32:
-		fixed = "4"
-	case descriptor.FieldDescriptorProto_TYPE_BOOL:
-		fixed = "1"
-	case descriptor.FieldDescriptorProto_TYPE_STRING:
-		fixed = "len(" + val + ")"
-		varint = fixed
-	case descriptor.FieldDescriptorProto_TYPE_GROUP:
-		fixed = g.Pkg["proto"] + ".Size(" + val + ")"
-	case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-		g.P("s := ", g.Pkg["proto"], ".Size(", val, ")")
-		fixed = "s"
-		varint = fixed
-	case descriptor.FieldDescriptorProto_TYPE_BYTES:
-		fixed = "len(" + val + ")"
-		varint = fixed
-	case descriptor.FieldDescriptorProto_TYPE_SINT32:
-		varint = "(uint32(" + val + ") << 1) ^ uint32((int32(" + val + ") >> 31))"
-	case descriptor.FieldDescriptorProto_TYPE_SINT64:
-		varint = "uint64(" + val + " << 1) ^ uint64((int64(" + val + ") >> 63))"
-	default:
-		g.Fail("unhandled oneof field type ", f.protoType.String())
-	}
-	// Tag and wire varint is known statically,
-	// so don't generate code for that part of the size computation.
-	tagAndWireSize := proto.SizeVarint(uint64(f.fieldNumber << 3)) // wire doesn't affect varint size
-	g.P("n += ", tagAndWireSize, " // tag and wire")
-	if varint != "" {
-		g.P("n += ", g.Pkg["proto"], ".SizeVarint(uint64(", varint, "))")
-	}
-	if fixed != "" {
-		g.P("n += ", fixed)
-	}
-	if f.protoType == descriptor.FieldDescriptorProto_TYPE_GROUP {
-		g.P("n += ", tagAndWireSize, " // tag and wire")
-	}
-}
-
-// getProtoDef returns the default value explicitly stated in the proto file, e.g "yoshi" or "5".
-func (f *oneofSubField) getProtoDef() string {
-	return f.protoDef
-}
-
-// getProtoTypeName returns the protobuf type name for the field as returned by field.GetTypeName(), e.g. ".google.protobuf.Duration".
-func (f *oneofSubField) getProtoTypeName() string {
-	return f.protoTypeName
-}
-
-// getProtoType returns the *field.Type value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64.
-func (f *oneofSubField) getProtoType() descriptor.FieldDescriptorProto_Type {
-	return f.protoType
-}
-
-// oneofField represents the oneof on top level.
-// The alternative fields within the oneof are represented by oneofSubField.
-type oneofField struct {
-	fieldCommon
-	subFields []*oneofSubField // All the possible oneof fields
-	comment   string           // The full comment for the field, e.g. "// Types that are valid to be assigned to MyOneof:\n\\"
-}
-
-// decl prints the declaration of the field in the struct (if any).
-func (f *oneofField) decl(g *Generator, mc *msgCtx) {
-	comment := f.comment
-	for _, sf := range f.subFields {
-		comment += "//\t*" + sf.oneofTypeName + "\n"
-	}
-	g.P(comment, Annotate(mc.message.file, f.fullPath, f.goName), " ", f.goType, " `", f.tags, "`")
-}
-
-// getter for a oneof field will print additional discriminators and interfaces for the oneof,
-// also it prints all the getters for the sub fields.
-func (f *oneofField) getter(g *Generator, mc *msgCtx) {
-	// The discriminator type
-	g.P("type ", f.goType, " interface {")
-	g.P(f.goType, "()")
-	g.P("}")
-	g.P()
-	// The subField types, fulfilling the discriminator type contract
-	for _, sf := range f.subFields {
-		g.P("type ", Annotate(mc.message.file, sf.fullPath, sf.oneofTypeName), " struct {")
-		g.P(Annotate(mc.message.file, sf.fullPath, sf.goName), " ", sf.goType, " `", sf.tags, "`")
-		g.P("}")
-		g.P()
-	}
-	for _, sf := range f.subFields {
-		g.P("func (*", sf.oneofTypeName, ") ", f.goType, "() {}")
-		g.P()
-	}
-	// Getter for the oneof field
-	g.P("func (m *", mc.goName, ") ", Annotate(mc.message.file, f.fullPath, f.getterName), "() ", f.goType, " {")
-	g.P("if m != nil { return m.", f.goName, " }")
-	g.P("return nil")
-	g.P("}")
-	g.P()
-	// Getters for each oneof
-	for _, sf := range f.subFields {
-		g.P("func (m *", mc.goName, ") ", Annotate(mc.message.file, sf.fullPath, sf.getterName), "() "+sf.goType+" {")
-		g.P("if x, ok := m.", f.getterName, "().(*", sf.oneofTypeName, "); ok {")
-		g.P("return x.", sf.goName)
-		g.P("}")
-		g.P("return ", sf.getterDef)
-		g.P("}")
-		g.P()
-	}
-}
-
-// setter prints the setter method of the field.
-func (f *oneofField) setter(g *Generator, mc *msgCtx) {
-	// No setters for oneof yet
-}
-
-// topLevelField interface implemented by all types of fields on the top level (not oneofSubField).
-type topLevelField interface {
-	decl(g *Generator, mc *msgCtx)   // print declaration within the struct
-	getter(g *Generator, mc *msgCtx) // print getter
-	setter(g *Generator, mc *msgCtx) // print setter if applicable
-}
-
-// defField interface implemented by all types of fields that can have defaults (not oneofField, but instead oneofSubField).
-type defField interface {
-	getProtoDef() string                                // default value explicitly stated in the proto file, e.g "yoshi" or "5"
-	getProtoName() string                               // proto name of a field, e.g. "field_name" or "descriptor"
-	getGoType() string                                  // go type of the field  as a string, e.g. "*int32"
-	getProtoTypeName() string                           // protobuf type name for the field, e.g. ".google.protobuf.Duration"
-	getProtoType() descriptor.FieldDescriptorProto_Type // *field.Type value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64
-}
-
->>>>>>> Add etcd storage
 // generateDefaultConstants adds constants for default values if needed, which is only if the default value is.
 // explicit in the proto.
 func (g *Generator) generateDefaultConstants(mc *msgCtx, topLevelFields []topLevelField) {
@@ -2484,7 +2017,6 @@ func (g *Generator) generateDefaultConstants(mc *msgCtx, topLevelFields []topLev
 				def = "float32(" + def + ")"
 			}
 			kind = "var "
-<<<<<<< HEAD
 		case df.getProtoType() == descriptor.FieldDescriptorProto_TYPE_FLOAT:
 			if f, err := strconv.ParseFloat(def, 32); err == nil {
 				def = fmt.Sprint(float32(f))
@@ -2493,8 +2025,6 @@ func (g *Generator) generateDefaultConstants(mc *msgCtx, topLevelFields []topLev
 			if f, err := strconv.ParseFloat(def, 64); err == nil {
 				def = fmt.Sprint(f)
 			}
-=======
->>>>>>> Add etcd storage
 		case df.getProtoType() == descriptor.FieldDescriptorProto_TYPE_ENUM:
 			// Must be an enum.  Need to construct the prefixed name.
 			obj := g.ObjectNamed(df.getProtoTypeName())
@@ -2524,7 +2054,6 @@ func (g *Generator) generateInternalStructFields(mc *msgCtx, topLevelFields []to
 		messageset := ""
 		if opts := mc.message.Options; opts != nil && opts.GetMessageSetWireFormat() {
 			messageset = "protobuf_messageset:\"1\" "
-<<<<<<< HEAD
 		}
 		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\"`")
 	}
@@ -2650,200 +2179,6 @@ func (g *Generator) generateCommonMethods(mc *msgCtx) {
 	g.P("xxx_messageInfo_", mc.goName, ".Merge(m, src)")
 	g.P("}")
 
-=======
-		}
-		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\"`")
-	}
-	g.P("XXX_unrecognized\t[]byte `json:\"-\"`")
-	g.P("XXX_sizecache\tint32 `json:\"-\"`")
-
-}
-
-// generateOneofFuncs adds all the utility functions for oneof, including marshalling, unmarshalling and sizer.
-func (g *Generator) generateOneofFuncs(mc *msgCtx, topLevelFields []topLevelField) {
-	ofields := []*oneofField{}
-	for _, f := range topLevelFields {
-		if o, ok := f.(*oneofField); ok {
-			ofields = append(ofields, o)
-		}
-	}
-	if len(ofields) == 0 {
-		return
-	}
-	enc := "_" + mc.goName + "_OneofMarshaler"
-	dec := "_" + mc.goName + "_OneofUnmarshaler"
-	size := "_" + mc.goName + "_OneofSizer"
-	encSig := "(msg " + g.Pkg["proto"] + ".Message, b *" + g.Pkg["proto"] + ".Buffer) error"
-	decSig := "(msg " + g.Pkg["proto"] + ".Message, tag, wire int, b *" + g.Pkg["proto"] + ".Buffer) (bool, error)"
-	sizeSig := "(msg " + g.Pkg["proto"] + ".Message) (n int)"
-
-	// OneofFuncs
-	g.P("// XXX_OneofFuncs is for the internal use of the proto package.")
-	g.P("func (*", mc.goName, ") XXX_OneofFuncs() (func", encSig, ", func", decSig, ", func", sizeSig, ", []interface{}) {")
-	g.P("return ", enc, ", ", dec, ", ", size, ", []interface{}{")
-	for _, of := range ofields {
-		for _, sf := range of.subFields {
-			sf.typedNil(g)
-		}
-	}
-	g.P("}")
-	g.P("}")
-	g.P()
-
-	// marshaler
-	g.P("func ", enc, encSig, " {")
-	g.P("m := msg.(*", mc.goName, ")")
-	for _, of := range ofields {
-		g.P("// ", of.getProtoName())
-		g.P("switch x := m.", of.goName, ".(type) {")
-		for _, sf := range of.subFields {
-			// also fills in field.wire
-			sf.marshalCase(g)
-		}
-		g.P("case nil:")
-		g.P("default:")
-		g.P(" return ", g.Pkg["fmt"], `.Errorf("`, mc.goName, ".", of.goName, ` has unexpected type %T", x)`)
-		g.P("}")
-	}
-	g.P("return nil")
-	g.P("}")
-	g.P()
-
-	// unmarshaler
-	g.P("func ", dec, decSig, " {")
-	g.P("m := msg.(*", mc.goName, ")")
-	g.P("switch tag {")
-	for _, of := range ofields {
-		for _, sf := range of.subFields {
-			sf.unmarshalCase(g, of.getProtoName(), of.goName)
-		}
-	}
-	g.P("default:")
-	g.P("return false, nil")
-	g.P("}")
-	g.P("}")
-	g.P()
-
-	// sizer
-	g.P("func ", size, sizeSig, " {")
-	g.P("m := msg.(*", mc.goName, ")")
-	for _, of := range ofields {
-		g.P("// ", of.getProtoName())
-		g.P("switch x := m.", of.goName, ".(type) {")
-		for _, sf := range of.subFields {
-			// also fills in field.wire
-			sf.sizerCase(g)
-		}
-		g.P("case nil:")
-		g.P("default:")
-		g.P("panic(", g.Pkg["fmt"], ".Sprintf(\"proto: unexpected type %T in oneof\", x))")
-		g.P("}")
-	}
-	g.P("return n")
-	g.P("}")
-	g.P()
-}
-
-// generateMessageStruct adds the actual struct with it's members (but not methods) to the output.
-func (g *Generator) generateMessageStruct(mc *msgCtx, topLevelFields []topLevelField) {
-	comments := g.PrintComments(mc.message.path)
-
-	// Guarantee deprecation comments appear after user-provided comments.
-	if mc.message.GetOptions().GetDeprecated() {
-		if comments {
-			// Convention: Separate deprecation comments from original
-			// comments with an empty line.
-			g.P("//")
-		}
-		g.P(deprecationComment)
-	}
-
-	g.P("type ", Annotate(mc.message.file, mc.message.path, mc.goName), " struct {")
-	for _, pf := range topLevelFields {
-		pf.decl(g, mc)
-	}
-	g.generateInternalStructFields(mc, topLevelFields)
-	g.P("}")
-}
-
-// generateGetters adds getters for all fields, including oneofs and weak fields when applicable.
-func (g *Generator) generateGetters(mc *msgCtx, topLevelFields []topLevelField) {
-	for _, pf := range topLevelFields {
-		pf.getter(g, mc)
-	}
-}
-
-// generateSetters add setters for all fields, including oneofs and weak fields when applicable.
-func (g *Generator) generateSetters(mc *msgCtx, topLevelFields []topLevelField) {
-	for _, pf := range topLevelFields {
-		pf.setter(g, mc)
-	}
-}
-
-// generateCommonMethods adds methods to the message that are not on a per field basis.
-func (g *Generator) generateCommonMethods(mc *msgCtx) {
-	// Reset, String and ProtoMessage methods.
-	g.P("func (m *", mc.goName, ") Reset() { *m = ", mc.goName, "{} }")
-	g.P("func (m *", mc.goName, ") String() string { return ", g.Pkg["proto"], ".CompactTextString(m) }")
-	g.P("func (*", mc.goName, ") ProtoMessage() {}")
-	var indexes []string
-	for m := mc.message; m != nil; m = m.parent {
-		indexes = append([]string{strconv.Itoa(m.index)}, indexes...)
-	}
-	g.P("func (*", mc.goName, ") Descriptor() ([]byte, []int) {")
-	g.P("return ", g.file.VarName(), ", []int{", strings.Join(indexes, ", "), "}")
-	g.P("}")
-	// TODO: Revisit the decision to use a XXX_WellKnownType method
-	// if we change proto.MessageName to work with multiple equivalents.
-	if mc.message.file.GetPackage() == "google.protobuf" && wellKnownTypes[mc.message.GetName()] {
-		g.P("func (*", mc.goName, `) XXX_WellKnownType() string { return "`, mc.message.GetName(), `" }`)
-	}
-
-	// Extension support methods
-	if len(mc.message.ExtensionRange) > 0 {
-		// message_set_wire_format only makes sense when extensions are defined.
-		if opts := mc.message.Options; opts != nil && opts.GetMessageSetWireFormat() {
-			g.P()
-			g.P("func (m *", mc.goName, ") MarshalJSON() ([]byte, error) {")
-			g.P("return ", g.Pkg["proto"], ".MarshalMessageSetJSON(&m.XXX_InternalExtensions)")
-			g.P("}")
-			g.P("func (m *", mc.goName, ") UnmarshalJSON(buf []byte) error {")
-			g.P("return ", g.Pkg["proto"], ".UnmarshalMessageSetJSON(buf, &m.XXX_InternalExtensions)")
-			g.P("}")
-		}
-
-		g.P()
-		g.P("var extRange_", mc.goName, " = []", g.Pkg["proto"], ".ExtensionRange{")
-		for _, r := range mc.message.ExtensionRange {
-			end := fmt.Sprint(*r.End - 1) // make range inclusive on both ends
-			g.P("{Start: ", r.Start, ", End: ", end, "},")
-		}
-		g.P("}")
-		g.P("func (*", mc.goName, ") ExtensionRangeArray() []", g.Pkg["proto"], ".ExtensionRange {")
-		g.P("return extRange_", mc.goName)
-		g.P("}")
-	}
-
-	// TODO: It does not scale to keep adding another method for every
-	// operation on protos that we want to switch over to using the
-	// table-driven approach. Instead, we should only add a single method
-	// that allows getting access to the *InternalMessageInfo struct and then
-	// calling Unmarshal, Marshal, Merge, Size, and Discard directly on that.
-
-	// Wrapper for table-driven marshaling and unmarshaling.
-	g.P("func (m *", mc.goName, ") XXX_Unmarshal(b []byte) error {")
-	g.P("return xxx_messageInfo_", mc.goName, ".Unmarshal(m, b)")
-	g.P("}")
-
-	g.P("func (m *", mc.goName, ") XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {")
-	g.P("return xxx_messageInfo_", mc.goName, ".Marshal(b, m, deterministic)")
-	g.P("}")
-
-	g.P("func (dst *", mc.goName, ") XXX_Merge(src ", g.Pkg["proto"], ".Message) {")
-	g.P("xxx_messageInfo_", mc.goName, ".Merge(dst, src)")
-	g.P("}")
-
->>>>>>> Add etcd storage
 	g.P("func (m *", mc.goName, ") XXX_Size() int {") // avoid name clash with "Size" field in some message
 	g.P("return xxx_messageInfo_", mc.goName, ".Size(m)")
 	g.P("}")
@@ -2911,12 +2246,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		if oneof && oFields[*field.OneofIndex] == nil {
 			odp := message.OneofDecl[int(*field.OneofIndex)]
 			base := CamelCase(odp.GetName())
-<<<<<<< HEAD
 			fname := allocNames(base)[0]
-=======
-			names := allocNames(base, "Get"+base)
-			fname, gname := names[0], names[1]
->>>>>>> Add etcd storage
 
 			// This is the first field of a oneof we haven't seen before.
 			// Generate the union field.
@@ -2934,11 +2264,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			of := oneofField{
 				fieldCommon: fieldCommon{
 					goName:     fname,
-<<<<<<< HEAD
 					getterName: "Get"+fname,
-=======
-					getterName: gname,
->>>>>>> Add etcd storage
 					goType:     dname,
 					tags:       tag,
 					protoName:  odp.GetName(),
@@ -2980,14 +2306,11 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			}
 		}
 
-<<<<<<< HEAD
 		fieldDeprecated := ""
 		if field.GetOptions().GetDeprecated() {
 			fieldDeprecated = deprecationComment
 		}
 
-=======
->>>>>>> Add etcd storage
 		dvalue := g.getterDefault(field, goTypeName)
 		if oneof {
 			tname := goTypeName + "_" + fieldName
@@ -3012,7 +2335,6 @@ func (g *Generator) generateMessage(message *Descriptor) {
 					continue
 				}
 				break
-<<<<<<< HEAD
 			}
 
 			oneofField := oFields[*field.OneofIndex]
@@ -3034,41 +2356,11 @@ func (g *Generator) generateMessage(message *Descriptor) {
 				oneofTypeName: tname,
 				deprecated:    fieldDeprecated,
 			}
-=======
-			}
-
-			oneofField := oFields[*field.OneofIndex]
-			tag := "protobuf:" + g.goTag(message, field, wiretype)
-			sf := oneofSubField{
-				fieldCommon: fieldCommon{
-					goName:     fieldName,
-					getterName: fieldGetterName,
-					goType:     typename,
-					tags:       tag,
-					protoName:  field.GetName(),
-					fullPath:   fmt.Sprintf("%s,%d,%d", message.path, messageFieldPath, i),
-				},
-				protoTypeName: field.GetTypeName(),
-				fieldNumber:   int(*field.Number),
-				protoType:     *field.Type,
-				getterDef:     dvalue,
-				protoDef:      field.GetDefaultValue(),
-				oneofTypeName: tname,
-			}
->>>>>>> Add etcd storage
 			oneofField.subFields = append(oneofField.subFields, &sf)
 			g.RecordTypeUse(field.GetTypeName())
 			continue
 		}
 
-<<<<<<< HEAD
-=======
-		fieldDeprecated := ""
-		if field.GetOptions().GetDeprecated() {
-			fieldDeprecated = deprecationComment
-		}
-
->>>>>>> Add etcd storage
 		fieldFullPath := fmt.Sprintf("%s,%d,%d", message.path, messageFieldPath, i)
 		c, ok := g.makeComments(fieldFullPath)
 		if ok {
@@ -3099,43 +2391,6 @@ func (g *Generator) generateMessage(message *Descriptor) {
 	mc := &msgCtx{
 		goName:  goTypeName,
 		message: message,
-<<<<<<< HEAD
-=======
-	}
-
-	g.generateMessageStruct(mc, topLevelFields)
-	g.P()
-	g.generateCommonMethods(mc)
-	g.P()
-	g.generateDefaultConstants(mc, topLevelFields)
-	g.P()
-	g.generateGetters(mc, topLevelFields)
-	g.P()
-	g.generateSetters(mc, topLevelFields)
-	g.P()
-	g.generateOneofFuncs(mc, topLevelFields)
-	g.P()
-
-	if !message.group {
-
-		var oneofTypes []string
-		for _, f := range topLevelFields {
-			if of, ok := f.(*oneofField); ok {
-				for _, osf := range of.subFields {
-					oneofTypes = append(oneofTypes, osf.oneofTypeName)
-				}
-			}
-		}
-
-		opts := message.Options
-		ms := &messageSymbol{
-			sym:           goTypeName,
-			hasExtensions: len(message.ExtensionRange) > 0,
-			isMessageSet:  opts != nil && opts.GetMessageSetWireFormat(),
-			oneofTypes:    oneofTypes,
-		}
-		g.file.addExport(message, ms)
->>>>>>> Add etcd storage
 	}
 
 	g.generateMessageStruct(mc, topLevelFields)

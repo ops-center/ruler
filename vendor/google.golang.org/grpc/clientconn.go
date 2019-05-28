@@ -38,11 +38,8 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/internal/backoff"
 	"google.golang.org/grpc/internal/channelz"
-<<<<<<< HEAD
 	"google.golang.org/grpc/internal/envconfig"
 	"google.golang.org/grpc/internal/grpcsync"
-=======
->>>>>>> Add etcd storage
 	"google.golang.org/grpc/internal/transport"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
@@ -105,15 +102,6 @@ const (
 	defaultReadBufSize  = 32 * 1024
 )
 
-<<<<<<< HEAD
-=======
-// RegisterChannelz turns on channelz service.
-// This is an EXPERIMENTAL API.
-func RegisterChannelz() {
-	channelz.TurnOn()
-}
-
->>>>>>> Add etcd storage
 // Dial creates a client connection to the given target.
 func Dial(target string, opts ...DialOption) (*ClientConn, error) {
 	return DialContext(context.Background(), target, opts...)
@@ -137,7 +125,6 @@ func Dial(target string, opts ...DialOption) (*ClientConn, error) {
 // e.g. to use dns resolver, a "dns:///" prefix should be applied to the target.
 func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *ClientConn, err error) {
 	cc := &ClientConn{
-<<<<<<< HEAD
 		target:            target,
 		csMgr:             &connectivityStateManager{},
 		conns:             make(map[*addrConn]struct{}),
@@ -145,13 +132,6 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 		blockingpicker:    newPickerWrapper(),
 		czData:            new(channelzData),
 		firstResolveEvent: grpcsync.NewEvent(),
-=======
-		target:         target,
-		csMgr:          &connectivityStateManager{},
-		conns:          make(map[*addrConn]struct{}),
-		dopts:          defaultDialOptions(),
-		blockingpicker: newPickerWrapper(),
->>>>>>> Add etcd storage
 	}
 	cc.retryThrottler.Store((*retryThrottler)(nil))
 	cc.ctx, cc.cancel = context.WithCancel(context.Background())
@@ -418,11 +398,8 @@ type ClientConn struct {
 	curAddresses    []resolver.Address
 	balancerWrapper *ccBalancerWrapper
 	retryThrottler  atomic.Value
-<<<<<<< HEAD
 
 	firstResolveEvent *grpcsync.Event
-=======
->>>>>>> Add etcd storage
 
 	channelzID int64 // channelz unique identification number
 	czData     *channelzData
@@ -763,7 +740,6 @@ func (cc *ClientConn) GetMethodConfig(method string) MethodConfig {
 	return m
 }
 
-<<<<<<< HEAD
 func (cc *ClientConn) healthCheckConfig() *healthCheckConfig {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
@@ -775,11 +751,6 @@ func (cc *ClientConn) getTransport(ctx context.Context, failfast bool, method st
 	t, done, err := cc.blockingpicker.pick(ctx, failfast, balancer.PickOptions{
 		FullMethodName: method,
 		Header:         hdr,
-=======
-func (cc *ClientConn) getTransport(ctx context.Context, failfast bool, method string) (transport.ClientTransport, func(balancer.DoneInfo), error) {
-	t, done, err := cc.blockingpicker.pick(ctx, failfast, balancer.PickOptions{
-		FullMethodName: method,
->>>>>>> Add etcd storage
 	})
 	if err != nil {
 		return nil, nil, toRPCErr(err)
@@ -1037,7 +1008,6 @@ func (ac *addrConn) resetTransport() {
 			hctx, hcancel := context.WithCancel(ac.ctx)
 			defer hcancel()
 			ac.mu.Unlock()
-<<<<<<< HEAD
 
 			if channelz.IsOn() {
 				channelz.AddTraceEvent(ac.channelzID, &channelz.TraceEventDesc{
@@ -1139,20 +1109,6 @@ func (ac *addrConn) resetTransport() {
 				ac.backoffIdx = 0
 				ac.mu.Unlock()
 				break addrLoop
-=======
-			grpclog.Warningf("grpc: addrConn.createTransport failed to connect to %v. Err :%v. Reconnecting...", addr, err)
-			continue
-		}
-		if ac.dopts.waitForHandshake {
-			select {
-			case <-done:
-			case <-connectCtx.Done():
-				// Didn't receive server preface, must kill this new transport now.
-				grpclog.Warningf("grpc: addrConn.createTransport failed to receive server preface before deadline.")
-				newTr.Close()
-				continue
-			case <-ac.ctx.Done():
->>>>>>> Add etcd storage
 			}
 		}
 
@@ -1291,7 +1247,6 @@ func (ac *addrConn) createTransport(addr resolver.Address, copts transport.Conne
 	return newTr, nil
 }
 
-<<<<<<< HEAD
 func (ac *addrConn) startHealthCheck(ctx context.Context, newTr transport.ClientTransport, addr resolver.Address, serviceName string) {
 	// Set up the health check helper functions
 	newStream := func() (interface{}, error) {
@@ -1338,8 +1293,6 @@ func (ac *addrConn) resetConnectBackoff() {
 	ac.mu.Unlock()
 }
 
-=======
->>>>>>> Add etcd storage
 // getReadyTransport returns the transport if ac's state is READY.
 // Otherwise it returns nil, false.
 // If ac's state is IDLE, it will trigger ac to connect.
@@ -1483,43 +1436,6 @@ type channelzChannel struct {
 
 func (c *channelzChannel) ChannelzMetric() *channelz.ChannelInternalMetric {
 	return c.cc.channelzMetric()
-}
-
-type retryThrottler struct {
-	max    float64
-	thresh float64
-	ratio  float64
-
-	mu     sync.Mutex
-	tokens float64 // TODO(dfawley): replace with atomic and remove lock.
-}
-
-// throttle subtracts a retry token from the pool and returns whether a retry
-// should be throttled (disallowed) based upon the retry throttling policy in
-// the service config.
-func (rt *retryThrottler) throttle() bool {
-	if rt == nil {
-		return false
-	}
-	rt.mu.Lock()
-	defer rt.mu.Unlock()
-	rt.tokens--
-	if rt.tokens < 0 {
-		rt.tokens = 0
-	}
-	return rt.tokens <= rt.thresh
-}
-
-func (rt *retryThrottler) successfulRPC() {
-	if rt == nil {
-		return
-	}
-	rt.mu.Lock()
-	defer rt.mu.Unlock()
-	rt.tokens += rt.ratio
-	if rt.tokens > rt.max {
-		rt.tokens = rt.max
-	}
 }
 
 // ErrClientConnTimeout indicates that the ClientConn cannot establish the

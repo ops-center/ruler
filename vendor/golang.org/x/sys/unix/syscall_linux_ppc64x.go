@@ -137,7 +137,6 @@ func SyncFileRange(fd int, off int64, n int64, flags int) error {
 	// order of their arguments.
 	return syncFileRange2(fd, flags, off, n)
 }
-<<<<<<< HEAD
 
 //sys	kexecFileLoad(kernelFd int, initrdFd int, cmdlineLen int, cmdline string, flags int) (err error)
 
@@ -151,5 +150,3 @@ func KexecFileLoad(kernelFd int, initrdFd int, cmdline string, flags int) error 
 	}
 	return kexecFileLoad(kernelFd, initrdFd, cmdlineLen, cmdline, flags)
 }
-=======
->>>>>>> Add etcd storage
