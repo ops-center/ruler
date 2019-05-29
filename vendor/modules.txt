@@ -15,8 +15,6 @@ github.com/Azure/go-autorest/autorest/to
 github.com/Azure/go-autorest/autorest/validation
 github.com/Azure/go-autorest/tracing
 github.com/Azure/go-autorest/logger
-# github.com/Masterminds/squirrel v0.0.0-20190511014652-b4b75d10d7bf
-github.com/Masterminds/squirrel
 # github.com/NYTimes/gziphandler v1.1.1
 github.com/NYTimes/gziphandler
 # github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
@@ -84,19 +82,12 @@ github.com/coreos/etcd/pkg/types
 github.com/cortexproject/cortex/pkg/util
 github.com/cortexproject/cortex/pkg/prom1/storage/metric
 github.com/cortexproject/cortex/pkg/querier
-github.com/cortexproject/cortex/pkg/configs
-github.com/cortexproject/cortex/pkg/configs/api
-github.com/cortexproject/cortex/pkg/configs/db
-github.com/cortexproject/cortex/pkg/configs/db/dbtest
 github.com/cortexproject/cortex/pkg/chunk
 github.com/cortexproject/cortex/pkg/ingester/client
 github.com/cortexproject/cortex/pkg/querier/batch
 github.com/cortexproject/cortex/pkg/querier/frontend
 github.com/cortexproject/cortex/pkg/querier/iterators
 github.com/cortexproject/cortex/pkg/util/chunkcompat
-github.com/cortexproject/cortex/pkg/configs/legacy_promql
-github.com/cortexproject/cortex/pkg/configs/db/memory
-github.com/cortexproject/cortex/pkg/configs/db/postgres
 github.com/cortexproject/cortex/pkg/chunk/cache
 github.com/cortexproject/cortex/pkg/chunk/encoding
 github.com/cortexproject/cortex/pkg/util/extract
@@ -210,20 +201,6 @@ github.com/json-iterator/go
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
 github.com/kr/logfmt
-# github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
-github.com/lann/builder
-# github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0
-github.com/lann/ps
-# github.com/lib/pq v1.0.0
-github.com/lib/pq
-github.com/lib/pq/oid
-# github.com/mattes/migrate v1.3.1
-github.com/mattes/migrate/driver/postgres
-github.com/mattes/migrate/migrate
-github.com/mattes/migrate/driver
-github.com/mattes/migrate/file
-github.com/mattes/migrate/migrate/direction
-github.com/mattes/migrate/pipe
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/miekg/dns v1.1.8
@@ -254,8 +231,6 @@ github.com/peterbourgon/diskv
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/prometheus/alertmanager v0.16.2
-github.com/prometheus/alertmanager/config
 # github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -339,7 +314,6 @@ github.com/spf13/cobra
 github.com/spf13/pflag
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/assert
-github.com/stretchr/testify/require
 # github.com/uber/jaeger-client-go v2.15.0+incompatible
 github.com/uber/jaeger-client-go
 github.com/uber/jaeger-client-go/internal/baggage

@@ -3,7 +3,6 @@ module github.com/searchlight/ruler
 go 1.12
 
 require (
-	github.com/Masterminds/squirrel v0.0.0-20190511014652-b4b75d10d7bf // indirect
 	github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668 // indirect
@@ -29,7 +28,6 @@ require (
 	github.com/opentracing-contrib/go-stdlib v0.0.0-20181222025249-77df8e8e70b4 // indirect
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/alertmanager v0.16.2 // indirect
 	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
 	github.com/prometheus/common v0.3.0
 	github.com/prometheus/prometheus v0.0.0-20190417125241-3cc5f9d88062
