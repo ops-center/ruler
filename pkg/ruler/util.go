@@ -10,6 +10,11 @@ import (
 const (
 	// UserIDHeaderName denotes the UserID the request has been authenticated as
 	UserIDHeaderName = "X-AppsCode-UserID"
+
+	// https://github.com/appscode-cloud/m3db-setup/issues/3
+	ClientIDLabel  = "byte_builders_client_id"
+	ClusterIDLabel = "byte_builders_cluster_id"
+	ProductIDLabel = "byte_builders_product_id"
 )
 
 func GetRuleGroupID(groupID string, ruleGroupName string) string {
@@ -36,7 +41,7 @@ func SetUserIDInHTTPRequest(userID string, r *http.Request) error {
 func GetLables(id string) []labels.Label {
 	return []labels.Label{
 		{
-			Name:  "client_id",
+			Name:  ClientIDLabel,
 			Value: id,
 		},
 	}
