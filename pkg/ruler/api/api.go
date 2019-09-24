@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/searchlight/ruler/pkg/ruler"
-
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/searchlight/ruler/pkg/ruler"
 	"gopkg.in/yaml.v2"
 )
 
