@@ -254,6 +254,7 @@ github.com/prometheus/prometheus/storage/remote
 github.com/prometheus/prometheus/pkg/labels
 github.com/prometheus/prometheus/promql
 github.com/prometheus/prometheus/rules
+github.com/prometheus/prometheus/util/strutil
 github.com/prometheus/prometheus/config
 github.com/prometheus/prometheus/discovery
 github.com/prometheus/prometheus/discovery/config
@@ -261,7 +262,6 @@ github.com/prometheus/prometheus/discovery/targetgroup
 github.com/prometheus/prometheus/notifier
 github.com/prometheus/prometheus/pkg/rulefmt
 github.com/prometheus/prometheus/storage
-github.com/prometheus/prometheus/util/strutil
 github.com/prometheus/prometheus/pkg/logging
 github.com/prometheus/prometheus/pkg/relabel
 github.com/prometheus/prometheus/pkg/timestamp
@@ -302,8 +302,6 @@ github.com/prometheus/tsdb/index
 github.com/samuel/go-zookeeper/zk
 # github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529
 github.com/sean-/seed
-# github.com/searchlight/prom-query-handler v0.0.0-20190416062001-a5c552e5e5c8
-github.com/searchlight/prom-query-handler/promquery
 # github.com/sercand/kuberesolver v2.1.0+incompatible
 github.com/sercand/kuberesolver
 # github.com/sirupsen/logrus v1.2.0

@@ -1,21 +1,7 @@
-// Copyright 2015 The Prometheus Authors
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package promquery
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"runtime"
 	"sort"
@@ -25,8 +11,6 @@ import (
 
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/labels"
-	"github.com/prometheus/prometheus/pkg/value"
-
 	"github.com/prometheus/prometheus/util/strutil"
 )
 
@@ -51,18 +35,6 @@ func (e *ParseErr) Error() string {
 	return fmt.Sprintf("parse error at line %d, char %d: %s", e.Line, e.Pos, e.Err)
 }
 
-// ParseMetric parses the input into a metric
-func ParseMetric(input string) (m labels.Labels, err error) {
-	p := newParser(input)
-	defer p.recover(&err)
-
-	m = p.metric()
-	if p.peek().typ != itemEOF {
-		p.errorf("could not parse remaining input %.15q...", p.lex.input[p.lex.lastPos:])
-	}
-	return m, nil
-}
-
 // newParser returns a new parser.
 func newParser(input string) *parser {
 	p := &parser{
@@ -82,110 +54,6 @@ func (v sequenceValue) String() string {
 		return "_"
 	}
 	return fmt.Sprintf("%f", v.value)
-}
-
-// parseSeriesDesc parses the description of a time series.
-func parseSeriesDesc(input string) (labels.Labels, []sequenceValue, error) {
-	p := newParser(input)
-	p.lex.seriesDesc = true
-
-	return p.parseSeriesDesc()
-}
-
-// parseSeriesDesc parses a description of a time series into its metric and value sequence.
-func (p *parser) parseSeriesDesc() (m labels.Labels, vals []sequenceValue, err error) {
-	defer p.recover(&err)
-
-	m = p.metric()
-
-	const ctx = "series values"
-	for {
-		for p.peek().typ == itemSpace {
-			p.next()
-		}
-		if p.peek().typ == itemEOF {
-			break
-		}
-
-		// Extract blanks.
-		if p.peek().typ == itemBlank {
-			p.next()
-			times := uint64(1)
-			if p.peek().typ == itemTimes {
-				p.next()
-				times, err = strconv.ParseUint(p.expect(itemNumber, ctx).val, 10, 64)
-				if err != nil {
-					p.errorf("invalid repetition in %s: %s", ctx, err)
-				}
-			}
-			for i := uint64(0); i < times; i++ {
-				vals = append(vals, sequenceValue{omitted: true})
-			}
-			// This is to ensure that there is a space between this and the next number.
-			// This is especially required if the next number is negative.
-			if t := p.expectOneOf(itemSpace, itemEOF, ctx).typ; t == itemEOF {
-				break
-			}
-			continue
-		}
-
-		// Extract values.
-		sign := 1.0
-		if t := p.peek().typ; t == itemSUB || t == itemADD {
-			if p.next().typ == itemSUB {
-				sign = -1
-			}
-		}
-		var k float64
-		if t := p.peek().typ; t == itemNumber {
-			k = sign * p.number(p.expect(itemNumber, ctx).val)
-		} else if t == itemIdentifier && p.peek().val == "stale" {
-			p.next()
-			k = math.Float64frombits(value.StaleNaN)
-		} else {
-			p.errorf("expected number or 'stale' in %s but got %s (value: %s)", ctx, t.desc(), p.peek())
-		}
-		vals = append(vals, sequenceValue{
-			value: k,
-		})
-
-		// If there are no offset repetitions specified, proceed with the next value.
-		if t := p.peek(); t.typ == itemSpace {
-			// This ensures there is a space between every value.
-			continue
-		} else if t.typ == itemEOF {
-			break
-		} else if t.typ != itemADD && t.typ != itemSUB {
-			p.errorf("expected next value or relative expansion in %s but got %s (value: %s)", ctx, t.desc(), p.peek())
-		}
-
-		// Expand the repeated offsets into values.
-		sign = 1.0
-		if p.next().typ == itemSUB {
-			sign = -1.0
-		}
-		offset := sign * p.number(p.expect(itemNumber, ctx).val)
-		p.expect(itemTimes, ctx)
-
-		times, err := strconv.ParseUint(p.expect(itemNumber, ctx).val, 10, 64)
-		if err != nil {
-			p.errorf("invalid repetition in %s: %s", ctx, err)
-		}
-
-		for i := uint64(0); i < times; i++ {
-			k += offset
-			vals = append(vals, sequenceValue{
-				value: k,
-			})
-		}
-		// This is to ensure that there is a space between this expanding notation
-		// and the next number. This is especially required if the next number
-		// is negative.
-		if t := p.expectOneOf(itemSpace, itemEOF, ctx).typ; t == itemEOF {
-			break
-		}
-	}
-	return m, vals, nil
 }
 
 // next returns the next token.

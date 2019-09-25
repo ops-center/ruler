@@ -32,7 +32,6 @@ require (
 	github.com/prometheus/common v0.3.0
 	github.com/prometheus/prometheus v0.0.0-20190417125241-3cc5f9d88062
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec // indirect
-	github.com/searchlight/prom-query-handler v0.0.0-20190416062001-a5c552e5e5c8
 	github.com/spf13/cobra v0.0.4
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
