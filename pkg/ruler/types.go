@@ -10,8 +10,8 @@ import (
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/rules"
-	"github.com/searchlight/prom-query-handler/promquery"
 	"github.com/searchlight/ruler/pkg/logger"
+	"github.com/searchlight/ruler/pkg/promquery"
 )
 
 type RuleGroupsWithInfo struct {

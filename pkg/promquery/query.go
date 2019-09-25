@@ -2,9 +2,9 @@ package promquery
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/labels"
 )
@@ -82,7 +82,7 @@ func AddLabelMatchersToQuery(q string, labels []labels.Label) (newQ string, err 
 		itm = nextItm
 	}
 
-	if qPos + 1 < len(q) {
+	if qPos+1 < len(q) {
 		newQ = newQ + q[qPos+1:]
 	}
 
@@ -149,7 +149,7 @@ func RemoveDuplicateLabels(q string, labels []labels.Label) (newQ string, err er
 		}
 	}
 
-	if qPos + 1 < len(q) {
+	if qPos+1 < len(q) {
 		newQ = newQ + q[qPos+1:]
 	}
 	return newQ, err
