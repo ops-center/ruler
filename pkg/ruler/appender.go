@@ -3,10 +3,11 @@ package ruler
 import (
 	"context"
 
+	"searchlight.dev/ruler/pkg/m3coordinator"
+
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/prompb"
 	"github.com/prometheus/prometheus/storage"
-	"github.com/searchlight/ruler/pkg/m3coordinator"
 )
 
 // appendableAppender adapts a m3coordinator client to both a ruler.Appendable

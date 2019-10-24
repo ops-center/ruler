@@ -6,10 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"searchlight.dev/ruler/pkg/ruler"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
-	"github.com/searchlight/ruler/pkg/ruler"
 	"go.etcd.io/etcd/clientv3"
 	"gopkg.in/yaml.v2"
 )

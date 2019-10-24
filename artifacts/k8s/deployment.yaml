@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: ruler
-          image: nightfury1204/ruler:canary
+          image: searchlight/ruler:canary
           imagePullPolicy: Always
           args:
             - "run"

@@ -10,6 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"searchlight.dev/ruler/pkg/cluster"
+	logger2 "searchlight.dev/ruler/pkg/logger"
+	"searchlight.dev/ruler/pkg/m3coordinator"
+
 	gklog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/opentracing/opentracing-go"
@@ -23,9 +27,6 @@ import (
 	"github.com/prometheus/prometheus/notifier"
 	"github.com/prometheus/prometheus/rules"
 	"github.com/prometheus/prometheus/util/strutil"
-	"github.com/searchlight/ruler/pkg/cluster"
-	logger2 "github.com/searchlight/ruler/pkg/logger"
-	"github.com/searchlight/ruler/pkg/m3coordinator"
 	"github.com/weaveworks/common/instrument"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"

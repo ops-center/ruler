@@ -1,8 +1,9 @@
 package main
 
 import (
+	"searchlight.dev/ruler/pkg/cmds"
+
 	"github.com/golang/glog"
-	"github.com/searchlight/ruler/pkg/cmds"
 )
 
 func main() {

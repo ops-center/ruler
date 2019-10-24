@@ -1,4 +1,4 @@
-module github.com/searchlight/ruler
+module searchlight.dev/ruler
 
 go 1.12
 

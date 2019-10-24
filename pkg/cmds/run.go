@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"searchlight.dev/ruler/pkg/logger"
+	"searchlight.dev/ruler/pkg/m3coordinator"
+	"searchlight.dev/ruler/pkg/m3query"
+	"searchlight.dev/ruler/pkg/ruler"
+	"searchlight.dev/ruler/pkg/ruler/api"
+	"searchlight.dev/ruler/pkg/storage/etcd"
+
 	"github.com/go-kit/kit/log"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/searchlight/ruler/pkg/logger"
-	"github.com/searchlight/ruler/pkg/m3coordinator"
-	"github.com/searchlight/ruler/pkg/m3query"
-	"github.com/searchlight/ruler/pkg/ruler"
-	"github.com/searchlight/ruler/pkg/ruler/api"
-	"github.com/searchlight/ruler/pkg/storage/etcd"
 	"github.com/spf13/cobra"
 )
 
