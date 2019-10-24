@@ -111,7 +111,7 @@ func (c *Client) GetQueryFunc() rules.QueryFunc {
 		if qResp.Error != "" {
 			return nil, errors.New(qResp.Error)
 		}
-		return M3QueryResponsePromqlVector(qResp, t), nil
+		return M3QueryResponsePromqlVector(qResp), nil
 	}
 }
 
@@ -142,7 +142,7 @@ func getQueryRequest(u *url.URL, q string, t time.Time) (*http.Request, error) {
 	return req, err
 }
 
-func M3QueryResponsePromqlVector(resp *M3QueryResponse, time2 time.Time) promql.Vector {
+func M3QueryResponsePromqlVector(resp *M3QueryResponse) promql.Vector {
 	vec := promql.Vector{}
 	if resp != nil {
 		rs := resp.Data.Result
