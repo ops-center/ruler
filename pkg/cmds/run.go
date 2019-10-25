@@ -11,6 +11,7 @@ import (
 	"searchlight.dev/ruler/pkg/ruler/api"
 	"searchlight.dev/ruler/pkg/storage/etcd"
 
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
@@ -30,7 +31,8 @@ func NewCmdRun() *cobra.Command {
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger.InitLogger()
-			logger.Logger.Log("Starting ruler")
+
+			utilerrors.Must(logger.Logger.Log("Starting ruler"))
 
 			glog.Infof("Starting ruler ...")
 			if err := rulerCfg.Validate(); err != nil {

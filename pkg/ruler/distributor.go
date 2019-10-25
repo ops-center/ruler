@@ -5,6 +5,7 @@ import (
 
 	"searchlight.dev/ruler/pkg/cluster"
 
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/cortexproject/cortex/pkg/util"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
@@ -60,7 +61,7 @@ func (d *Distributor) Refresh() {
 		return
 	}
 
-	level.Debug(util.Logger).Log("domain", "distributor", "msg", "refreshing...")
+	utilerrors.Must(level.Debug(util.Logger).Log("domain", "distributor", "msg", "refreshing..."))
 	d.peer.WaitReady()
 
 	var nodeList []string
@@ -77,11 +78,7 @@ func (d *Distributor) MemberNodeList() []string {
 }
 
 func (d *Distributor) HandleRefresh(interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	for {
-		select {
-		case <-ticker.C:
-			d.Refresh()
-		}
+	for range time.Tick(interval) {
+		d.Refresh()
 	}
 }

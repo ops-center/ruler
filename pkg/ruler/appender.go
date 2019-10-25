@@ -23,7 +23,7 @@ func (a *appendableAppender) Appender() (storage.Appender, error) {
 }
 
 func (a *appendableAppender) Add(l labels.Labels, t int64, v float64) (uint64, error) {
-	lbs := []prompb.Label{}
+	var lbs []prompb.Label
 	for _, lbl := range l {
 		lbs = append(lbs, prompb.Label{
 			Name:  lbl.Name,

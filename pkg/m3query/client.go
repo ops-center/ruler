@@ -15,6 +15,7 @@ import (
 
 	"searchlight.dev/ruler/pkg/logger"
 
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/pkg/labels"
@@ -102,7 +103,7 @@ func (c *Client) GetQueryFunc() rules.QueryFunc {
 		if err != nil {
 			return nil, err
 		}
-		defer resp.Body.Close()
+		defer utilerrors.Must(resp.Body.Close())
 
 		qResp := &M3QueryResponse{}
 		if err := json.NewDecoder(resp.Body).Decode(qResp); err != nil {
@@ -157,14 +158,14 @@ func M3QueryResponsePromqlVector(resp *M3QueryResponse) promql.Vector {
 					t := int64(0)
 					v := ""
 					for _, val := range vlist {
-						switch val.(type) {
+						switch u := val.(type) {
 						case string:
-							v = val.(string)
+							v = u
 						case float64:
-							t = int64(val.(float64))
+							t = int64(u)
 						default:
 							f, err := strconv.ParseFloat(fmt.Sprint(val), 64)
-							level.Warn(logger.Logger).Log("failed to convert interface{} to float64", err)
+							utilerrors.Must(level.Warn(logger.Logger).Log("failed to convert interface{} to float64", err))
 							t = int64(f)
 						}
 						if v != "" {
@@ -178,7 +179,7 @@ func M3QueryResponsePromqlVector(resp *M3QueryResponse) promql.Vector {
 				if updatedV != "" {
 					v, err := strconv.ParseFloat(updatedV, 64)
 					if err != nil {
-						level.Warn(logger.Logger).Log("failed to convert interface{} to float64", err)
+						utilerrors.Must(level.Warn(logger.Logger).Log("failed to convert interface{} to float64", err))
 					} else {
 						// https://prometheus.io/docs/concepts/data_model/
 						// converting to millisecond
