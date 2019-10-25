@@ -6,10 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"searchlight.dev/ruler/pkg/ruler"
+
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
-	"github.com/searchlight/ruler/pkg/ruler"
 	"go.etcd.io/etcd/clientv3"
 	"gopkg.in/yaml.v2"
 )
@@ -90,7 +92,7 @@ func (c *Client) getWithPrefix(prefix string) ([]ruler.RuleGroupsWithInfo, error
 		return nil, err
 	}
 
-	rgList := []ruler.RuleGroupsWithInfo{}
+	var rgList []ruler.RuleGroupsWithInfo
 	for _, rg := range resp.Kvs {
 		r := ruler.RuleGroupsWithInfo{}
 		if err := yaml.Unmarshal(rg.Value, &r); err != nil {
@@ -140,7 +142,7 @@ func (c *Client) Watch(ch chan ruler.RuleGroupsWithInfo) {
 			} else {
 				r := ruler.RuleGroupsWithInfo{}
 				if err := yaml.Unmarshal(ev.Kv.Value, &r); err != nil {
-					level.Warn(c.logger).Log("msg", "failed unmarshal response", "err", err)
+					utilerrors.Must(level.Warn(c.logger).Log("msg", "failed unmarshal response", "err", err))
 				} else {
 					ch <- r
 				}
@@ -150,7 +152,7 @@ func (c *Client) Watch(ch chan ruler.RuleGroupsWithInfo) {
 }
 
 func (c *Client) Close() {
-	c.cl.Close()
+	utilerrors.Must(c.cl.Close())
 }
 
 func getKey(usedID, groupID string) string {

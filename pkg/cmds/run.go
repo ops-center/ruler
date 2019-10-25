@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"searchlight.dev/ruler/pkg/logger"
+	"searchlight.dev/ruler/pkg/m3coordinator"
+	"searchlight.dev/ruler/pkg/m3query"
+	"searchlight.dev/ruler/pkg/ruler"
+	"searchlight.dev/ruler/pkg/ruler/api"
+	"searchlight.dev/ruler/pkg/storage/etcd"
+
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/searchlight/ruler/pkg/logger"
-	"github.com/searchlight/ruler/pkg/m3coordinator"
-	"github.com/searchlight/ruler/pkg/m3query"
-	"github.com/searchlight/ruler/pkg/ruler"
-	"github.com/searchlight/ruler/pkg/ruler/api"
-	"github.com/searchlight/ruler/pkg/storage/etcd"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +31,8 @@ func NewCmdRun() *cobra.Command {
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger.InitLogger()
-			logger.Logger.Log("Starting ruler")
+
+			utilerrors.Must(logger.Logger.Log("Starting ruler"))
 
 			glog.Infof("Starting ruler ...")
 			if err := rulerCfg.Validate(); err != nil {

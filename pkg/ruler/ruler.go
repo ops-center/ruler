@@ -10,6 +10,11 @@ import (
 	"sync"
 	"time"
 
+	"searchlight.dev/ruler/pkg/cluster"
+	logger2 "searchlight.dev/ruler/pkg/logger"
+	"searchlight.dev/ruler/pkg/m3coordinator"
+
+	utilerrors "github.com/appscode/go/util/errors"
 	gklog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/opentracing/opentracing-go"
@@ -23,9 +28,6 @@ import (
 	"github.com/prometheus/prometheus/notifier"
 	"github.com/prometheus/prometheus/rules"
 	"github.com/prometheus/prometheus/util/strutil"
-	"github.com/searchlight/ruler/pkg/cluster"
-	logger2 "github.com/searchlight/ruler/pkg/logger"
-	"github.com/searchlight/ruler/pkg/m3coordinator"
 	"github.com/weaveworks/common/instrument"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
@@ -117,7 +119,7 @@ func (rn *rulerNotifier) run() {
 	rn.wg.Add(1)
 	go func() {
 		if err := rn.sdManager.Run(); err != nil {
-			level.Error(rn.logger).Log("msg", "error starting notifier discovery manager", "err", err)
+			utilerrors.Must(level.Error(rn.logger).Log("msg", "error starting notifier discovery manager", "err", err))
 		}
 		rn.wg.Done()
 	}()
@@ -341,9 +343,9 @@ func (r *Ruler) Evaluate(userID string, item *workItem) {
 	// TODO:
 	ctx := context.Background()
 	logger := gklog.With(logger2.Logger, "user_id", userID)
-	level.Debug(logger).Log("msg", "evaluating rules...", "num_rules", len(item.group.Rules()))
+	utilerrors.Must(level.Debug(logger).Log("msg", "evaluating rules...", "num_rules", len(item.group.Rules())))
 	ctx, cancelTimeout := context.WithTimeout(ctx, r.groupTimeout)
-	instrument.CollectedRequest(ctx, "Evaluate", evalDuration, nil, func(ctx native_ctx.Context) error {
+	_ = instrument.CollectedRequest(ctx, "Evaluate", evalDuration, nil, func(ctx native_ctx.Context) error {
 		if span := opentracing.SpanFromContext(ctx); span != nil {
 			span.SetTag("instance", userID)
 			span.SetTag("groupName", item.ruleGroupName)
@@ -354,7 +356,7 @@ func (r *Ruler) Evaluate(userID string, item *workItem) {
 	if err := ctx.Err(); err == nil {
 		cancelTimeout() // release resources
 	} else {
-		level.Warn(logger).Log("msg", "context error", "error", err)
+		utilerrors.Must(level.Warn(logger).Log("msg", "context error", "error", err))
 	}
 
 	rulesProcessed.Add(float64(len(item.group.Rules())))
@@ -363,7 +365,7 @@ func (r *Ruler) Evaluate(userID string, item *workItem) {
 // Stop stops the Ruler.
 func (r *Ruler) Stop() {
 	if r.peer != nil {
-		r.peer.Leave(10 * time.Second)
+		_ = r.peer.Leave(10 * time.Second)
 	}
 
 	r.notifiersMtx.Lock()
@@ -387,10 +389,10 @@ func (r *Ruler) ClusterStatus(w http.ResponseWriter, req *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(status); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		_, e2 := w.Write([]byte(err.Error()))
+		utilerrors.Must(utilerrors.NewAggregate([]error{err, e2}))
 		return
 	}
-	return
 }
 
 func (r *Ruler) HashRingStatus(w http.ResponseWriter, req *http.Request) {
@@ -406,10 +408,10 @@ func (r *Ruler) HashRingStatus(w http.ResponseWriter, req *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(status); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		_, e2 := w.Write([]byte(err.Error()))
+		utilerrors.Must(utilerrors.NewAggregate([]error{err, e2}))
 		return
 	}
-	return
 }
 
 // Server is a rules server.
@@ -445,7 +447,7 @@ func (s *Server) run() {
 	for _, w := range s.workers {
 		go w.Run()
 	}
-	level.Info(logger2.Logger).Log("msg", "ruler up and running")
+	utilerrors.Must(level.Info(logger2.Logger).Log("msg", "ruler up and running"))
 }
 
 // Stop the server.
@@ -489,22 +491,22 @@ func (w *worker) Run() {
 		}
 		waitStart := time.Now()
 		blockedWorkers.Inc()
-		level.Debug(logger2.Logger).Log("msg", "waiting for next work item")
+		utilerrors.Must(level.Debug(logger2.Logger).Log("msg", "waiting for next work item"))
 		item := w.scheduler.nextWorkItem()
 		blockedWorkers.Dec()
-		waitElapsed := time.Now().Sub(waitStart)
+		waitElapsed := time.Since(waitStart)
 		if item == nil {
-			level.Debug(logger2.Logger).Log("msg", "queue closed and empty; terminating worker")
+			utilerrors.Must(level.Debug(logger2.Logger).Log("msg", "queue closed and empty; terminating worker"))
 			return
 		}
 		evalLatency.Observe(time.Since(item.scheduled).Seconds())
 		workerIdleTime.Add(waitElapsed.Seconds())
-		level.Debug(logger2.Logger).Log("msg", "processing item", "item", item)
+		utilerrors.Must(level.Debug(logger2.Logger).Log("msg", "processing item", "item", item))
 
 		// Add work distribution
 		if w.ruler.distributor != nil {
 			if ok, err := w.ruler.distributor.IsAssigned(item.userID); err != nil {
-				level.Warn(logger2.Logger).Log("msg", "check user is assigned", "err", err)
+				utilerrors.Must(level.Warn(logger2.Logger).Log("msg", "check user is assigned", "err", err))
 			} else if !ok {
 				// this user is not assigned to this node
 				continue
@@ -513,7 +515,7 @@ func (w *worker) Run() {
 
 		w.ruler.Evaluate(item.userID, item)
 		w.scheduler.workItemDone(*item)
-		level.Debug(logger2.Logger).Log("msg", "item handed back to queue", "item", item)
+		utilerrors.Must(level.Debug(logger2.Logger).Log("msg", "item handed back to queue", "item", item))
 	}
 }
 

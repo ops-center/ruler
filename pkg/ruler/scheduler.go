@@ -10,12 +10,14 @@ import (
 	"sync"
 	"time"
 
+	"searchlight.dev/ruler/pkg/logger"
+
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/cortexproject/cortex/pkg/util"
 	"github.com/go-kit/kit/log/level"
 	"github.com/jonboulle/clockwork"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/prometheus/rules"
-	"github.com/searchlight/ruler/pkg/logger"
 	"github.com/weaveworks/common/instrument"
 )
 
@@ -88,10 +90,6 @@ type ruleGroup struct {
 	rules         []rules.Rule
 }
 
-type userRules struct {
-	ruleList map[string][]ruleGroup // key is groupID
-}
-
 type groupFactory func(userID string, groupID string, ruleGroupName string, rls []rules.Rule) (*group, error)
 
 type scheduler struct {
@@ -127,7 +125,7 @@ func newScheduler(rc RuleGetter, evaluationInterval, pollInterval time.Duration,
 
 // Run polls the source of rules for changes.
 func (s *scheduler) Run() {
-	level.Debug(logger.Logger).Log("msg", "scheduler started")
+	utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler started"))
 	defer close(s.done)
 	// Load initial set of all rules before polling for new ones.
 	s.addNewRules(time.Now(), s.loadAllRules())
@@ -137,7 +135,7 @@ func (s *scheduler) Run() {
 		case now := <-ticker.C:
 			err := s.updateRules(now)
 			if err != nil {
-				level.Warn(logger.Logger).Log("msg", "scheduler: error updating rules", "err", err)
+				utilerrors.Must(level.Warn(logger.Logger).Log("msg", "scheduler: error updating rules", "err", err))
 			}
 		case <-s.stop:
 			ticker.Stop()
@@ -150,7 +148,7 @@ func (s *scheduler) Stop() {
 	close(s.stop)
 	s.q.Close()
 	<-s.done
-	level.Debug(logger.Logger).Log("msg", "scheduler stopped")
+	utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler stopped"))
 }
 
 // Load the full set of rules from the server, retrying with backoff
@@ -160,10 +158,10 @@ func (s *scheduler) loadAllRules() []RuleGroupsWithInfo {
 	for {
 		cfgs, err := s.poll(true)
 		if err == nil {
-			level.Debug(logger.Logger).Log("msg", "scheduler: initial rules load", "num_ruless", len(cfgs))
+			utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler: initial rules load", "num_ruless", len(cfgs)))
 			return cfgs
 		}
-		level.Warn(logger.Logger).Log("msg", "scheduler: error fetching all rules, backing off", "err", err)
+		utilerrors.Must(level.Warn(logger.Logger).Log("msg", "scheduler: error fetching all rules, backing off", "err", err))
 		backoff.Wait()
 	}
 }
@@ -192,7 +190,7 @@ func (s *scheduler) poll(all bool) ([]RuleGroupsWithInfo, error) {
 		return err
 	})
 	if err != nil {
-		level.Warn(logger.Logger).Log("msg", "scheduler: rules server poll failed", "err", err)
+		utilerrors.Must(level.Warn(logger.Logger).Log("msg", "scheduler: rules server poll failed", "err", err))
 		return nil, err
 	}
 	return rules, nil
@@ -205,7 +203,8 @@ func (s *scheduler) computeNextEvalTime(hasher hash.Hash64, now time.Time, userI
 	currentEvalCyclePoint := math.Mod(float64(now.UnixNano()), intervalNanos)
 
 	hasher.Reset()
-	hasher.Write([]byte(userID))
+	_, err := hasher.Write([]byte(userID))
+	utilerrors.Must(err)
 	offset := math.Mod(
 		// We subtract our current point in the cycle to cause the entries
 		// before 'now' to wrap around to the end.
@@ -217,7 +216,7 @@ func (s *scheduler) computeNextEvalTime(hasher hash.Hash64, now time.Time, userI
 
 func (s *scheduler) addNewRules(now time.Time, rList []RuleGroupsWithInfo) {
 	// TODO: instrument how many rules we have, both valid & invalid.
-	level.Debug(logger.Logger).Log("msg", "adding rules", "num_rules", len(rList))
+	utilerrors.Must(level.Debug(logger.Logger).Log("msg", "adding rules", "num_rules", len(rList)))
 	s.addOrRemoveRules(now, rList)
 
 	ruleUpdates.Add(float64(len(rList)))
@@ -238,9 +237,7 @@ func (s *scheduler) addOrRemoveRules(now time.Time, rList []RuleGroupsWithInfo) 
 		// check whether this rule deleted or not
 		if r.DeletedAtInUnix > 0 {
 			s.Lock()
-			if _, found := s.processingRules[key]; found {
-				delete(s.processingRules, key)
-			}
+			delete(s.processingRules, key)
 			s.Unlock()
 			continue
 		} else {
@@ -251,13 +248,13 @@ func (s *scheduler) addOrRemoveRules(now time.Time, rList []RuleGroupsWithInfo) 
 
 		rls, err := r.Parse()
 		if err != nil {
-			level.Warn(logger.Logger).Log("msg", "scheduler: invalid rule group", "user_id", key.UserID(), "group_id", key.GroupID(), "err", err)
+			utilerrors.Must(level.Warn(logger.Logger).Log("msg", "scheduler: invalid rule group", "user_id", key.UserID(), "group_id", key.GroupID(), "err", err))
 			return
 		}
 		rulesByGroup[key] = rls
 	}
 
-	level.Info(logger.Logger).Log("msg", "scheduler: updating rules", "num_groups", len(rulesByGroup))
+	utilerrors.Must(level.Info(logger.Logger).Log("msg", "scheduler: updating rules", "num_groups", len(rulesByGroup)))
 
 	hasher := fnv.New64a()
 	workItems := []workItem{}
@@ -267,14 +264,14 @@ func (s *scheduler) addOrRemoveRules(now time.Time, rList []RuleGroupsWithInfo) 
 		groupID := key.GroupID()
 		evalTime := s.computeNextEvalTime(hasher, now, userID)
 
-		level.Debug(logger.Logger).Log("msg", "scheduler: updating rules for user and group", "user_id", userID, "group", groupID, "num_rules", len(rules))
+		utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler: updating rules for user and group", "user_id", userID, "group", groupID, "num_rules", len(rules)))
 		for _, rg := range rules {
 			g, err := s.groupFn(userID, groupID, rg.ruleGroupName, rg.rules)
 			if err != nil {
 				// XXX: similarly to above if a user has a working configuration and
 				// for some reason we cannot create a group for the new one we'll use
 				// the last known working configuration
-				level.Warn(logger.Logger).Log("msg", "scheduler: failed to create group for user", "user_id", userID, "group", groupID, "err", err)
+				utilerrors.Must(level.Warn(logger.Logger).Log("msg", "scheduler: failed to create group for user", "user_id", userID, "group", groupID, "err", err))
 				return
 			}
 
@@ -294,7 +291,7 @@ func (s *scheduler) addOrRemoveRules(now time.Time, rList []RuleGroupsWithInfo) 
 func (s *scheduler) addWorkItem(i workItem) {
 	// The queue is keyed by userID+groupID+ruleGroupName, so items for existing userID+groupID+ruleGroupName will be replaced.
 	s.q.Enqueue(i)
-	level.Debug(logger.Logger).Log("msg", "scheduler: work item added", "item", i)
+	utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler: work item added", "item", i))
 }
 
 // Get the next scheduled work item, blocking if none.
@@ -302,16 +299,16 @@ func (s *scheduler) addWorkItem(i workItem) {
 // Call `workItemDone` on the returned item to indicate that it is ready to be
 // rescheduled.
 func (s *scheduler) nextWorkItem() *workItem {
-	level.Debug(logger.Logger).Log("msg", "scheduler: work item requested, pending...")
+	utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler: work item requested, pending..."))
 	// TODO: We are blocking here on the second Dequeue event. Write more
 	// tests for the scheduling queue.
 	op := s.q.Dequeue()
 	if op == nil {
-		level.Info(logger.Logger).Log("msg", "queue closed; no more work items")
+		utilerrors.Must(level.Info(logger.Logger).Log("msg", "queue closed; no more work items"))
 		return nil
 	}
 	item := op.(workItem)
-	level.Debug(logger.Logger).Log("msg", "scheduler: work item granted", "item", item)
+	utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler: work item granted", "item", item))
 	return &item
 }
 
@@ -321,7 +318,7 @@ func (s *scheduler) workItemDone(i workItem) {
 	processing, found := s.processingRules[GetRuleKey(i.userID, i.groupID)]
 	s.Unlock()
 	if !found || !processing {
-		level.Debug(logger.Logger).Log("msg", "scheduler: stopping item", "user_id", i.userID, "group_id", i.groupID, "rule_group", i.ruleGroupName, "found", found)
+		utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler: stopping item", "user_id", i.userID, "group_id", i.groupID, "rule_group", i.ruleGroupName, "found", found))
 		return
 	}
 
@@ -332,7 +329,7 @@ func (s *scheduler) workItemDone(i workItem) {
 		interval = i.interval
 	}
 	next := i.Defer(interval)
-	level.Debug(logger.Logger).Log("msg", "scheduler: work item rescheduled", "item", i, "time", next.scheduled.Format(timeLogFormat))
+	utilerrors.Must(level.Debug(logger.Logger).Log("msg", "scheduler: work item rescheduled", "item", i, "time", next.scheduled.Format(timeLogFormat)))
 	s.addWorkItem(next)
 }
 

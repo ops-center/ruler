@@ -35,7 +35,7 @@ func (r *RuleGetterWrapper) GetAllRuleGroups() ([]RuleGroupsWithInfo, error) {
 		return rgs, err
 	}
 	if r.d != nil {
-		newRgs := []RuleGroupsWithInfo{}
+		var newRgs []RuleGroupsWithInfo
 		for _, rg := range rgs {
 			if assigned, err := r.d.IsAssigned(rg.UserID); err == nil && assigned {
 				newRgs = append(newRgs, rg)
@@ -55,7 +55,7 @@ func (r *RuleGetterWrapper) GetAllUpdatedRuleGroups() ([]RuleGroupsWithInfo, err
 	r.mtx.Unlock()
 
 	if r.d != nil {
-		newRgs := []RuleGroupsWithInfo{}
+		var newRgs []RuleGroupsWithInfo
 		for _, rg := range list {
 			if assigned, err := r.d.IsAssigned(rg.UserID); err == nil && assigned {
 				newRgs = append(newRgs, rg)

@@ -1,3 +1,4 @@
+//nolint:unused
 package promquery
 
 import (
@@ -114,6 +115,7 @@ func (p *parser) error(err error) {
 }
 
 // expect consumes the next token and guarantees it has the required type.
+//nolint:unparam
 func (p *parser) expect(exp ItemType, context string) item {
 	token := p.next()
 	if token.typ != exp {
@@ -136,17 +138,15 @@ var errUnexpected = fmt.Errorf("unexpected error")
 // recover is the handler that turns panics into returns from the top level of Parse.
 func (p *parser) recover(errp *error) {
 	e := recover()
-	if e != nil {
-		if _, ok := e.(runtime.Error); ok {
-			// Print the stack trace but do not inhibit the running application.
-			buf := make([]byte, 64<<10)
-			buf = buf[:runtime.Stack(buf, false)]
+	if _, ok := e.(runtime.Error); ok {
+		// Print the stack trace but do not inhibit the running application.
+		buf := make([]byte, 64<<10)
+		buf = buf[:runtime.Stack(buf, false)]
 
-			fmt.Fprintf(os.Stderr, "parser panic: %v\n%s", e, buf)
-			*errp = errUnexpected
-		} else {
-			*errp = e.(error)
-		}
+		_, _ = fmt.Fprintf(os.Stderr, "parser panic: %v\n%s", e, buf)
+		*errp = errUnexpected
+	} else if e != nil {
+		*errp = e.(error)
 	}
 	p.lex.close()
 }
@@ -173,14 +173,14 @@ func (p *parser) labels() []string {
 
 	p.expect(itemLeftParen, ctx)
 
-	labels := []string{}
+	var lbls []string
 	if p.peek().typ != itemRightParen {
 		for {
 			id := p.next()
 			if !isLabel(id.val) {
 				p.errorf("unexpected %s in %s, expected label", id.desc(), ctx)
 			}
-			labels = append(labels, id.val)
+			lbls = append(lbls, id.val)
 
 			if p.peek().typ != itemComma {
 				break
@@ -190,7 +190,7 @@ func (p *parser) labels() []string {
 	}
 	p.expect(itemRightParen, ctx)
 
-	return labels
+	return lbls
 }
 
 // labelSet parses a set of label matchers

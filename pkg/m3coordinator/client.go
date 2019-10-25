@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	promRemoteReadPath  = "/api/v1/prom/remote/read"
+	// promRemoteReadPath  = "/api/v1/prom/remote/read"
 	promRemoteWritePath = "/api/v1/prom/remote/write"
 )
 
@@ -34,7 +34,7 @@ func NewWriter(cfg *Configs) (Writer, error) {
 
 	conf := &remote.ClientConfig{
 		URL: &prom_config.URL{
-			u,
+			URL: u,
 		},
 		Timeout: model.Duration(cfg.WriteTimeout),
 		HTTPClientConfig: prom_config.HTTPClientConfig{

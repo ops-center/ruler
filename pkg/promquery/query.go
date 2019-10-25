@@ -109,7 +109,6 @@ func RemoveDuplicateLabels(q string, labels []labels.Label) (newQ string, err er
 	for itm.typ != itemEOF {
 		if itm.typ == itemLeftBrace {
 			newQ = newQ + q[qPos+1:itm.pos+1]
-			qPos = int(itm.pos)
 
 			for _, lb := range labels {
 				isLabelUsedMap[lb.Name] = false
@@ -156,7 +155,7 @@ func RemoveDuplicateLabels(q string, labels []labels.Label) (newQ string, err er
 }
 
 func LabelsToString(labels []labels.Label) string {
-	lbs := []string{}
+	var lbs []string
 	for _, l := range labels {
 		lbs = append(lbs, fmt.Sprintf(`%s="%s"`, l.Name, l.Value))
 	}

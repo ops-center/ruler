@@ -3,6 +3,7 @@ package ruler
 import (
 	"sync"
 
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/hashicorp/memberlist"
@@ -31,7 +32,7 @@ func (d *eventDelegate) SetDo(f func()) {
 
 // NotifyJoin is called if a peer joins the cluster.
 func (d *eventDelegate) NotifyJoin(n *memberlist.Node) {
-	level.Debug(d.logger).Log("received", "NotifyJoin", "node", n.Name, "addr", n.Address())
+	utilerrors.Must(level.Debug(d.logger).Log("received", "NotifyJoin", "node", n.Name, "addr", n.Address()))
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
 	if d.do != nil {
@@ -41,7 +42,7 @@ func (d *eventDelegate) NotifyJoin(n *memberlist.Node) {
 
 // NotifyLeave is called if a peer leaves the cluster.
 func (d *eventDelegate) NotifyLeave(n *memberlist.Node) {
-	level.Debug(d.logger).Log("received", "NotifyLeave", "node", n.Name, "addr", n.Address())
+	utilerrors.Must(level.Debug(d.logger).Log("received", "NotifyLeave", "node", n.Name, "addr", n.Address()))
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
 	if d.do != nil {
@@ -51,6 +52,6 @@ func (d *eventDelegate) NotifyLeave(n *memberlist.Node) {
 
 // NotifyUpdate is called if a cluster peer gets updated.
 func (d *eventDelegate) NotifyUpdate(n *memberlist.Node) {
-	level.Debug(d.logger).Log("received", "NotifyUpdate", "node", n.Name, "addr", n.Address())
+	utilerrors.Must(level.Debug(d.logger).Log("received", "NotifyUpdate", "node", n.Name, "addr", n.Address()))
 	// Do nothing
 }

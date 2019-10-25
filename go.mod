@@ -1,11 +1,10 @@
-module github.com/searchlight/ruler
+module searchlight.dev/ruler
 
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
+	github.com/appscode/go v0.0.0-20191025021232-311ac347b3ef
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 // indirect
-	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668 // indirect
 	github.com/coreos/bbolt v1.3.2 // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/cortexproject/cortex v0.0.0-20190517092904-975f5bb837c7
