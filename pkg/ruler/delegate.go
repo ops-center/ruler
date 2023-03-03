@@ -3,6 +3,7 @@ package ruler
 import (
 	"sync"
 
+
 	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"

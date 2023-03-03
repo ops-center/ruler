@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+
 	"github.com/prometheus/prometheus/rules"
 	"github.com/stretchr/testify/assert"
 )

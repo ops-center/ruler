@@ -481,7 +481,7 @@ func parseGetResponse(r *bufio.Reader, cb func(*Item)) error {
 		if err != nil {
 			return err
 		}
-		it.Value, err = ioutil.ReadAll(io.LimitReader(r, int64(size)+2))
+		it.Value, err = io.ReadAll(io.LimitReader(r, int64(size)+2))
 		if err != nil {
 			return err
 		}

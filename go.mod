@@ -23,6 +23,8 @@ require (
 	github.com/hashicorp/memberlist v0.1.4
 	github.com/hashicorp/serf v0.8.3 // indirect
 	github.com/jonboulle/clockwork v0.1.0
+	github.com/json-iterator/go v1.1.12
+	github.com/modern-go/reflect2 v1.0.2
 	github.com/oklog/ulid v1.3.1
 	github.com/opentracing-contrib/go-stdlib v0.0.0-20181222025249-77df8e8e70b4 // indirect
 	github.com/opentracing/opentracing-go v1.1.0
@@ -41,9 +43,11 @@ require (
 	go.etcd.io/etcd v3.3.13+incompatible
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0 // indirect
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+	golang.org/x/crypto v0.6.0
+	golang.org/x/net v0.7.0
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/client-go v10.0.0+incompatible // indirect
+	kmodules.xyz/resource-metadata v0.15.0
 	stathat.com/c/consistent v1.0.0
 )

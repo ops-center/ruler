@@ -6,6 +6,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+
 )
 
 // item represents a token or text string returned from the scanner.

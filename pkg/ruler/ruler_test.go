@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+
 	"github.com/cortexproject/cortex/pkg/querier"
 	"github.com/prometheus/prometheus/notifier"
 	"github.com/prometheus/prometheus/pkg/labels"

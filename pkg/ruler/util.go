@@ -3,6 +3,7 @@ package ruler
 import (
 	"net/http"
 
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/pkg/labels"
 )

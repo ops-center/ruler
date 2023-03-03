@@ -141,14 +141,14 @@ const statusSuccess = "success"
 
 func parseQueryRangeResponse(ctx context.Context, r *http.Response) (*APIResponse, error) {
 	if r.StatusCode/100 != 2 {
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		return nil, httpgrpc.Errorf(r.StatusCode, string(body))
 	}
 
 	sp, _ := opentracing.StartSpanFromContext(ctx, "parseQueryRangeResponse")
 	defer sp.Finish()
 
-	buf, err := ioutil.ReadAll(r.Body)
+	buf, err := io.ReadAll(r.Body)
 	if err != nil {
 		sp.LogFields(otlog.Error(err))
 		return nil, httpgrpc.Errorf(http.StatusInternalServerError, "error decoding response: %v", err)

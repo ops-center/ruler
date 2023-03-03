@@ -203,7 +203,7 @@ func NewTLSConfig(cfg *Configs) (*tls.Config, error) {
 	if len(cfg.CAFile) > 0 {
 		caCertPool := x509.NewCertPool()
 		// Load CA cert.
-		caCert, err := ioutil.ReadFile(cfg.CAFile)
+		caCert, err := os.ReadFile(cfg.CAFile)
 		if err != nil {
 			return nil, fmt.Errorf("unable to use specified CA cert %s: %s", cfg.CAFile, err)
 		}

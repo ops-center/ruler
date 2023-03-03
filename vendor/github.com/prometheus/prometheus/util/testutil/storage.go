@@ -26,7 +26,7 @@ import (
 // NewStorage returns a new storage for testing purposes
 // that removes all associated files on closing.
 func NewStorage(t T) storage.Storage {
-	dir, err := ioutil.TempDir("", "test_storage")
+	dir, err := os.MkdirTemp("", "test_storage")
 	if err != nil {
 		t.Fatalf("Opening test dir failed: %s", err)
 	}

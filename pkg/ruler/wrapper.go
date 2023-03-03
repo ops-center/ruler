@@ -76,3 +76,5 @@ func (r *RuleGetterWrapper) RunUpdatesCollector() {
 		r.mtx.Unlock()
 	}
 }
+
+

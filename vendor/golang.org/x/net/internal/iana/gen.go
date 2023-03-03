@@ -69,7 +69,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	if err := ioutil.WriteFile("const.go", b, 0644); err != nil {
+	if err := os.WriteFile("const.go", b, 0644); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
